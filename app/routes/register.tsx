@@ -77,8 +77,18 @@ export default function Register() {
     setSuccessMessage("");
 
     try {
-      // Remove confirmPassword before sending to API
-      const { confirmPassword, ...registerData } = formData;
+      // Extract confirmPassword from form data (we validated it already in validateForm)
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { confirmPassword, ...registerDataWithoutConfirm } = formData;
+
+      // Create username from firstName and lastName
+      const username = `${formData.firstName.toLowerCase()}${formData.lastName.toLowerCase()}`;
+
+      // Final data with username included
+      const registerData = {
+        ...registerDataWithoutConfirm,
+        username,
+      };
 
       const result = await authService.register(registerData);
 
@@ -143,7 +153,7 @@ export default function Register() {
                 onChange={handleChange}
                 className={`appearance-none relative block w-full px-3 py-2 border ${
                   errors.firstName ? "border-red-500" : "border-gray-300"
-                } bg-white rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500`}
+                } bg-white text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500`}
               />
               {errors.firstName && (
                 <p className="mt-1 text-sm text-red-600">{errors.firstName}</p>
@@ -164,7 +174,7 @@ export default function Register() {
                 onChange={handleChange}
                 className={`appearance-none relative block w-full px-3 py-2 border ${
                   errors.lastName ? "border-red-500" : "border-gray-300"
-                } bg-white rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500`}
+                } bg-white text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500`}
               />
               {errors.lastName && (
                 <p className="mt-1 text-sm text-red-600">{errors.lastName}</p>
@@ -187,7 +197,7 @@ export default function Register() {
               onChange={handleChange}
               className={`appearance-none relative block w-full px-3 py-2 border ${
                 errors.email ? "border-red-500" : "border-gray-300"
-              } bg-white rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500`}
+              } bg-white text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500`}
             />
             {errors.email && (
               <p className="mt-1 text-sm text-red-600">{errors.email}</p>
@@ -205,7 +215,7 @@ export default function Register() {
               name="userType"
               value={formData.userType}
               onChange={handleChange}
-              className="appearance-none relative block w-full px-3 py-2 border border-gray-300 bg-white rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+              className="appearance-none relative block w-full px-3 py-2 border border-gray-300 bg-white text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
               <option value="PATIENT">Patient</option>
               <option value="CAREGIVER">Caregiver</option>
             </select>
@@ -226,7 +236,7 @@ export default function Register() {
               onChange={handleChange}
               className={`appearance-none relative block w-full px-3 py-2 border ${
                 errors.password ? "border-red-500" : "border-gray-300"
-              } bg-white rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500`}
+              } bg-white text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500`}
             />
             {errors.password && (
               <p className="mt-1 text-sm text-red-600">{errors.password}</p>
@@ -248,7 +258,7 @@ export default function Register() {
               onChange={handleChange}
               className={`appearance-none relative block w-full px-3 py-2 border ${
                 errors.confirmPassword ? "border-red-500" : "border-gray-300"
-              } bg-white rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500`}
+              } bg-white text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500`}
             />
             {errors.confirmPassword && (
               <p className="mt-1 text-sm text-red-600">
