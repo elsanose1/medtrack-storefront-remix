@@ -16,6 +16,18 @@ export default function Register() {
     password: "",
     confirmPassword: "",
     userType: "PATIENT", // Default user type
+    // Pharmacy-specific fields
+    pharmacyName: "",
+    licenseNumber: "",
+    phoneNumber: "",
+    address: "",
+    city: "",
+    state: "",
+    zip: "",
+    // Patient-specific fields
+    dateOfBirth: "",
+    medicalHistory: "",
+    allergies: "",
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -23,7 +35,9 @@ export default function Register() {
   const [successMessage, setSuccessMessage] = useState("");
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >
   ) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
@@ -37,6 +51,7 @@ export default function Register() {
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
+    // Common validations
     if (!formData.firstName.trim()) {
       newErrors.firstName = "First name is required";
     }
@@ -61,6 +76,29 @@ export default function Register() {
       newErrors.confirmPassword = "Passwords do not match";
     }
 
+    // Pharmacy-specific validations
+    if (formData.userType === "PHARMACY") {
+      if (!formData.pharmacyName) {
+        newErrors.pharmacyName = "Pharmacy name is required";
+      }
+      if (!formData.licenseNumber) {
+        newErrors.licenseNumber = "License number is required";
+      }
+      if (!formData.phoneNumber) {
+        newErrors.phoneNumber = "Phone number is required";
+      }
+      if (!formData.address) {
+        newErrors.address = "Address is required";
+      }
+    }
+
+    // Patient-specific validations
+    if (formData.userType === "PATIENT") {
+      if (!formData.dateOfBirth) {
+        newErrors.dateOfBirth = "Date of birth is required";
+      }
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -77,20 +115,48 @@ export default function Register() {
     setSuccessMessage("");
 
     try {
-      // Extract confirmPassword from form data (we validated it already in validateForm)
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { confirmPassword, ...registerDataWithoutConfirm } = formData;
-
       // Create username from firstName and lastName
       const username = `${formData.firstName.toLowerCase()}${formData.lastName.toLowerCase()}`;
 
-      // Final data with username included
-      const registerData = {
-        ...registerDataWithoutConfirm,
-        username,
-      };
+      let result;
 
-      const result = await authService.register(registerData);
+      if (formData.userType === "PATIENT") {
+        // Extract patient-specific data
+        const patientData = {
+          username,
+          email: formData.email,
+          password: formData.password,
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          dateOfBirth: formData.dateOfBirth,
+          medicalHistory: formData.medicalHistory || undefined,
+          allergies: formData.allergies
+            ? formData.allergies.split(",").map((a) => a.trim())
+            : undefined,
+        };
+
+        result = await authService.register(patientData);
+      } else if (formData.userType === "PHARMACY") {
+        // Extract pharmacy-specific data
+        const pharmacyData = {
+          username,
+          email: formData.email,
+          password: formData.password,
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          pharmacyName: formData.pharmacyName,
+          licenseNumber: formData.licenseNumber,
+          phoneNumber: formData.phoneNumber,
+          address: formData.address,
+          city: formData.city || undefined,
+          state: formData.state || undefined,
+          zip: formData.zip || undefined,
+        };
+
+        result = await authService.register(pharmacyData);
+      } else {
+        throw new Error("Invalid user type");
+      }
 
       if (result.success) {
         setSuccessMessage("Registration successful! Redirecting to login...");
@@ -217,9 +283,253 @@ export default function Register() {
               onChange={handleChange}
               className="appearance-none relative block w-full px-3 py-2 border border-gray-300 bg-white text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
               <option value="PATIENT">Patient</option>
-              <option value="CAREGIVER">Caregiver</option>
+              <option value="PHARMACY">Pharmacy</option>
             </select>
           </div>
+
+          {/* Conditional fields based on user type */}
+          {formData.userType === "PHARMACY" && (
+            <div className="space-y-4">
+              <div>
+                <label
+                  htmlFor="pharmacyName"
+                  className="block text-sm font-medium text-gray-700 mb-1">
+                  Pharmacy Name*
+                </label>
+                <input
+                  id="pharmacyName"
+                  name="pharmacyName"
+                  type="text"
+                  value={formData.pharmacyName}
+                  onChange={handleChange}
+                  className={`appearance-none relative block w-full px-3 py-2 border ${
+                    errors.pharmacyName ? "border-red-500" : "border-gray-300"
+                  } bg-white text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500`}
+                />
+                {errors.pharmacyName && (
+                  <p className="mt-1 text-sm text-red-600">
+                    {errors.pharmacyName}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label
+                  htmlFor="licenseNumber"
+                  className="block text-sm font-medium text-gray-700 mb-1">
+                  License Number*
+                </label>
+                <input
+                  id="licenseNumber"
+                  name="licenseNumber"
+                  type="text"
+                  value={formData.licenseNumber}
+                  onChange={handleChange}
+                  className={`appearance-none relative block w-full px-3 py-2 border ${
+                    errors.licenseNumber ? "border-red-500" : "border-gray-300"
+                  } bg-white text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500`}
+                />
+                {errors.licenseNumber && (
+                  <p className="mt-1 text-sm text-red-600">
+                    {errors.licenseNumber}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label
+                  htmlFor="phoneNumber"
+                  className="block text-sm font-medium text-gray-700 mb-1">
+                  Phone Number*
+                </label>
+                <input
+                  id="phoneNumber"
+                  name="phoneNumber"
+                  type="tel"
+                  value={formData.phoneNumber}
+                  onChange={handleChange}
+                  className={`appearance-none relative block w-full px-3 py-2 border ${
+                    errors.phoneNumber ? "border-red-500" : "border-gray-300"
+                  } bg-white text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500`}
+                />
+                {errors.phoneNumber && (
+                  <p className="mt-1 text-sm text-red-600">
+                    {errors.phoneNumber}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label
+                  htmlFor="address"
+                  className="block text-sm font-medium text-gray-700 mb-1">
+                  Address*
+                </label>
+                <input
+                  id="address"
+                  name="address"
+                  type="text"
+                  value={formData.address}
+                  onChange={handleChange}
+                  className={`appearance-none relative block w-full px-3 py-2 border ${
+                    errors.address ? "border-red-500" : "border-gray-300"
+                  } bg-white text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500`}
+                />
+                {errors.address && (
+                  <p className="mt-1 text-sm text-red-600">{errors.address}</p>
+                )}
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label
+                    htmlFor="city"
+                    className="block text-sm font-medium text-gray-700 mb-1">
+                    City
+                  </label>
+                  <input
+                    id="city"
+                    name="city"
+                    type="text"
+                    value={formData.city}
+                    onChange={handleChange}
+                    className="appearance-none relative block w-full px-3 py-2 border border-gray-300 bg-white text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                  />
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="state"
+                    className="block text-sm font-medium text-gray-700 mb-1">
+                    State
+                  </label>
+                  <input
+                    id="state"
+                    name="state"
+                    type="text"
+                    value={formData.state}
+                    onChange={handleChange}
+                    className="appearance-none relative block w-full px-3 py-2 border border-gray-300 bg-white text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                  />
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="zip"
+                    className="block text-sm font-medium text-gray-700 mb-1">
+                    ZIP Code
+                  </label>
+                  <input
+                    id="zip"
+                    name="zip"
+                    type="text"
+                    value={formData.zip}
+                    onChange={handleChange}
+                    className="appearance-none relative block w-full px-3 py-2 border border-gray-300 bg-white text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                  />
+                </div>
+              </div>
+
+              <div className="bg-yellow-50 border border-yellow-100 rounded-md p-4">
+                <p className="text-sm text-yellow-700">
+                  Note: Your pharmacy account will need to be verified by an
+                  administrator before you can fully access all features.
+                </p>
+              </div>
+            </div>
+          )}
+
+          {formData.userType === "PATIENT" && (
+            <div className="space-y-4">
+              <div>
+                <label
+                  htmlFor="dateOfBirth"
+                  className="block text-sm font-medium text-gray-700 mb-1">
+                  Date of Birth*
+                </label>
+                <input
+                  id="dateOfBirth"
+                  name="dateOfBirth"
+                  type="date"
+                  value={formData.dateOfBirth}
+                  onChange={handleChange}
+                  className={`appearance-none relative block w-full px-3 py-2 border ${
+                    errors.dateOfBirth ? "border-red-500" : "border-gray-300"
+                  } bg-white text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500`}
+                />
+                {errors.dateOfBirth && (
+                  <p className="mt-1 text-sm text-red-600">
+                    {errors.dateOfBirth}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label
+                  htmlFor="phoneNumber"
+                  className="block text-sm font-medium text-gray-700 mb-1">
+                  Phone Number
+                </label>
+                <input
+                  id="phoneNumber"
+                  name="phoneNumber"
+                  type="tel"
+                  value={formData.phoneNumber}
+                  onChange={handleChange}
+                  className="appearance-none relative block w-full px-3 py-2 border border-gray-300 bg-white text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                />
+              </div>
+
+              <div>
+                <label
+                  htmlFor="address"
+                  className="block text-sm font-medium text-gray-700 mb-1">
+                  Address
+                </label>
+                <input
+                  id="address"
+                  name="address"
+                  type="text"
+                  value={formData.address}
+                  onChange={handleChange}
+                  className="appearance-none relative block w-full px-3 py-2 border border-gray-300 bg-white text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                />
+              </div>
+
+              <div>
+                <label
+                  htmlFor="medicalHistory"
+                  className="block text-sm font-medium text-gray-700 mb-1">
+                  Medical History
+                </label>
+                <textarea
+                  id="medicalHistory"
+                  name="medicalHistory"
+                  value={formData.medicalHistory}
+                  onChange={handleChange}
+                  rows={3}
+                  className="appearance-none relative block w-full px-3 py-2 border border-gray-300 bg-white text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                />
+              </div>
+
+              <div>
+                <label
+                  htmlFor="allergies"
+                  className="block text-sm font-medium text-gray-700 mb-1">
+                  Allergies (comma separated)
+                </label>
+                <input
+                  id="allergies"
+                  name="allergies"
+                  type="text"
+                  value={formData.allergies}
+                  onChange={handleChange}
+                  placeholder="e.g. Penicillin, Peanuts, Latex"
+                  className="appearance-none relative block w-full px-3 py-2 border border-gray-300 bg-white text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                />
+              </div>
+            </div>
+          )}
 
           <div>
             <label
