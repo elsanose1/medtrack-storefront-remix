@@ -116,7 +116,7 @@ export default function Register() {
 
     try {
       // Create username from firstName and lastName
-      const username = `${formData.firstName.toLowerCase()}${formData.lastName.toLowerCase()}`;
+      const username = `${formData.firstName.toLowerCase()}-${formData.lastName.toLowerCase()}`;
 
       let result;
 
@@ -128,6 +128,7 @@ export default function Register() {
           password: formData.password,
           firstName: formData.firstName,
           lastName: formData.lastName,
+          userType: formData.userType.toLowerCase(),
           dateOfBirth: formData.dateOfBirth,
           medicalHistory: formData.medicalHistory || undefined,
           allergies: formData.allergies
@@ -144,6 +145,7 @@ export default function Register() {
           password: formData.password,
           firstName: formData.firstName,
           lastName: formData.lastName,
+          userType: formData.userType.toLowerCase(),
           pharmacyName: formData.pharmacyName,
           licenseNumber: formData.licenseNumber,
           phoneNumber: formData.phoneNumber,
