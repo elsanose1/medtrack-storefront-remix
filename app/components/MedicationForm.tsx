@@ -211,7 +211,7 @@ export default function MedicationForm({
             value={drugSearchQuery}
             onChange={(e) => setDrugSearchQuery(e.target.value)}
             placeholder="Search for medications..."
-            className="w-full px-4 py-2 border border-gray-300 bg-white rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full px-4 py-2 border border-gray-300 bg-white text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
           />
           {isSearching && (
             <div className="absolute right-3 top-2">
@@ -257,7 +257,7 @@ export default function MedicationForm({
             onChange={handleChange}
             className={`w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
               errors.brandName ? "border-red-500" : "border-gray-300"
-            } bg-white`}
+            } bg-white text-gray-900`}
           />
           {errors.brandName && (
             <p className="mt-1 text-sm text-red-600">{errors.brandName}</p>
@@ -276,7 +276,7 @@ export default function MedicationForm({
             name="genericName"
             value={values.genericName}
             onChange={handleChange}
-            className="w-full px-4 py-2 border border-gray-300 bg-white rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full px-4 py-2 border border-gray-300 bg-white text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
           />
         </div>
 
@@ -295,7 +295,7 @@ export default function MedicationForm({
             placeholder="e.g. 10mg tablet"
             className={`w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
               errors.dosage ? "border-red-500" : "border-gray-300"
-            } bg-white`}
+            } bg-white text-gray-900`}
           />
           {errors.dosage && (
             <p className="mt-1 text-sm text-red-600">{errors.dosage}</p>
@@ -317,7 +317,7 @@ export default function MedicationForm({
             placeholder="e.g. Once daily, Twice daily"
             className={`w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
               errors.frequency ? "border-red-500" : "border-gray-300"
-            } bg-white`}
+            } bg-white text-gray-900`}
           />
           {errors.frequency && (
             <p className="mt-1 text-sm text-red-600">{errors.frequency}</p>
@@ -337,7 +337,7 @@ export default function MedicationForm({
             onChange={handleChange}
             rows={3}
             placeholder="e.g. Take with food"
-            className="w-full px-4 py-2 border border-gray-300 bg-white rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+            className="w-full px-4 py-2 border border-gray-300 bg-white text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
         </div>
 
         <div>
@@ -352,7 +352,7 @@ export default function MedicationForm({
             name="startDate"
             value={values.startDate}
             onChange={handleChange}
-            className="w-full px-4 py-2 border border-gray-300 bg-white rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full px-4 py-2 border border-gray-300 bg-white text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
           />
         </div>
 
@@ -370,7 +370,7 @@ export default function MedicationForm({
             onChange={handleChange}
             className={`w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
               errors.endDate ? "border-red-500" : "border-gray-300"
-            } bg-white`}
+            } bg-white text-gray-900`}
           />
           {errors.endDate && (
             <p className="mt-1 text-sm text-red-600">{errors.endDate}</p>
@@ -439,7 +439,7 @@ export default function MedicationForm({
                   onChange={(e) =>
                     handleReminderChange(index, "time", e.target.value)
                   }
-                  className="w-full sm:w-auto px-4 py-2 border border-gray-300 bg-white rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full sm:w-auto px-4 py-2 border border-gray-300 bg-white text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 />
               </div>
 
