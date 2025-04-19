@@ -23,6 +23,7 @@ interface RegisterData {
 
 interface DecodedToken {
   id: string;
+  _id: string;
   email: string;
   username: string;
   userType: string;
@@ -91,7 +92,10 @@ const getUserInfo = () => {
   if (!token) return null;
 
   try {
-    return jwtDecode<DecodedToken>(token);
+    const decoded = jwtDecode<DecodedToken>(token);
+    // Ensure _id is set based on id for compatibility
+    decoded._id = decoded.id;
+    return decoded;
   } catch (error) {
     return null;
   }

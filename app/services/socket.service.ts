@@ -138,4 +138,5 @@ export const socketService = {
   removeReminderUpdateListener,
   setupErrorListener,
   removeErrorListener,
+  getSocket: () => socket,
 };
