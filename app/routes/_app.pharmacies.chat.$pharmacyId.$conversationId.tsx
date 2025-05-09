@@ -11,6 +11,8 @@ export const meta: MetaFunction = () => {
 
 export default function ChatPage() {
   const { pharmacyId, conversationId } = useParams();
+  console.log("testttttttttttttttt");
+
   const navigate = useNavigate();
   const [pharmacyName, setPharmacyName] = useState("Pharmacy");
   const [loading, setLoading] = useState(true);
@@ -61,7 +63,7 @@ export default function ChatPage() {
           try {
             await chatService.createConversation(pharmacyId);
             // Refresh the page to get the new conversation
-            window.location.reload();
+            // window.location.reload();
           } catch (createErr) {
             console.error("Failed to create conversation:", createErr);
             setError("Conversation not found and could not be created");

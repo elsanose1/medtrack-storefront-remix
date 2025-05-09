@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from "react";
-import { useParams } from "@remix-run/react";
 import { chatService } from "~/services/chat.service";
 import { authService } from "~/services/auth.service";
 import { socketService } from "~/services/socket.service";
@@ -109,21 +108,33 @@ export default function ChatMessages({
 
     try {
       setSending(true);
+      console.log("Sending message to conversation:", conversationId);
+      console.log("Message content:", newMessage.trim());
+
       const sentMessage = await chatService.sendMessage(
         conversationId,
         newMessage.trim()
       );
 
+      console.log("Message sent response:", sentMessage);
+
       // If the message was sent successfully and not already added by socket, add it to the list
       if (sentMessage && !messages.some((m) => m._id === sentMessage._id)) {
         setMessages((prevMessages) => [...prevMessages, sentMessage]);
+      } else if (!sentMessage) {
+        console.error("Failed to send message: No message data returned");
+        setError("Failed to send message. Please try again.");
       }
 
       setNewMessage("");
       setError(null);
     } catch (err) {
       console.error("Failed to send message:", err);
-      setError("Failed to send message. Please try again.");
+      setError(
+        typeof err === "object" && err !== null && "message" in err
+          ? String(err.message)
+          : "Failed to send message. Please try again."
+      );
     } finally {
       setSending(false);
     }
