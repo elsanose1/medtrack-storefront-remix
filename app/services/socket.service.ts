@@ -15,6 +15,37 @@ export interface MedicationReminderNotification {
   isTestReminder?: boolean;
 }
 
+export interface ChatMessage {
+  _id: string;
+  sender: {
+    _id: string;
+    firstName: string;
+    lastName: string;
+    username?: string;
+  };
+  receiver: {
+    _id: string;
+    firstName: string;
+    lastName: string;
+    username?: string;
+  };
+  message: string;
+  conversation: string;
+  createdAt: string;
+  read: boolean;
+}
+
+// Add simplified message format interface
+export interface SimplifiedChatMessage {
+  _id: string;
+  conversation: string;
+  sender: string;
+  senderName: string;
+  content: string;
+  createdAt: string;
+  read?: boolean;
+}
+
 let socket: Socket | null = null;
 
 // Initialize the socket connection
@@ -53,6 +84,84 @@ const disconnectSocket = () => {
     socket.disconnect();
     socket = null;
   }
+};
+
+// Join a conversation room
+const joinConversation = (conversationId: string) => {
+  const currentSocket = socket || initializeSocket();
+  if (!currentSocket) return false;
+
+  currentSocket.emit("join_conversation", conversationId);
+  return true;
+};
+
+// Leave a conversation room
+const leaveConversation = (conversationId: string) => {
+  if (!socket) return false;
+  socket.emit("leave_conversation", conversationId);
+  return true;
+};
+
+// Set up new message listener
+const setupMessageListener = (
+  callback: (message: ChatMessage | SimplifiedChatMessage) => void
+) => {
+  const currentSocket = socket || initializeSocket();
+  if (!currentSocket) return false;
+
+  // Get the current active conversation from the URL if possible
+  const getActiveConversationFromURL = () => {
+    if (typeof window !== "undefined") {
+      const url = window.location.pathname;
+      const conversationMatch = url.match(/\/chat\/[^/]+\/([^/]+)/);
+      return conversationMatch ? conversationMatch[1] : null;
+    }
+    return null;
+  };
+
+  // Add a handler for raw socket messages that ensures conversation ID is present
+  currentSocket.on("new_message", (rawMessage) => {
+    console.log("Raw message from socket:", rawMessage);
+
+    // Try to ensure the message has a conversation ID
+    if (!rawMessage.conversation) {
+      const activeConversation = getActiveConversationFromURL();
+      if (activeConversation) {
+        console.log("Adding conversation ID to message:", activeConversation);
+        rawMessage.conversation = activeConversation;
+      }
+    }
+
+    // Just pass the message through to the callback
+    // The component will determine how to handle it
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    callback(rawMessage as any);
+  });
+
+  return true;
+};
+
+// Remove new message listener
+const removeMessageListener = () => {
+  if (!socket) return;
+  socket.off("new_message");
+};
+
+// Set up messages read listener
+const setupMessagesReadListener = (
+  callback: (data: { userId: string; conversationId: string }) => void
+) => {
+  const currentSocket = socket || initializeSocket();
+  if (!currentSocket) return false;
+
+  currentSocket.on("messages_read", callback);
+  return true;
+};
+
+// Remove messages read listener
+const removeMessagesReadListener = () => {
+  if (!socket) return;
+  socket.off("messages_read");
 };
 
 // Setup medication reminder listener
@@ -114,7 +223,7 @@ const removeReminderUpdateListener = () => {
 };
 
 // Handle errors
-const setupErrorListener = (callback: (error: any) => void) => {
+const setupErrorListener = (callback: (error: unknown) => void) => {
   const currentSocket = socket || initializeSocket();
   if (!currentSocket) return false;
 
@@ -131,6 +240,12 @@ const removeErrorListener = () => {
 export const socketService = {
   initializeSocket,
   disconnectSocket,
+  joinConversation,
+  leaveConversation,
+  setupMessageListener,
+  removeMessageListener,
+  setupMessagesReadListener,
+  removeMessagesReadListener,
   setupMedicationReminderListener,
   removeMedicationReminderListener,
   sendReminderResponse,

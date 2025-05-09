@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from "@remix-run/react";
 import ChatMessages from "~/components/Chat/ChatMessages";
 import { chatService } from "~/services/chat.service";
 import { authService } from "~/services/auth.service";
+import { socketService } from "~/services/socket.service";
 import type { MetaFunction } from "@remix-run/node";
 
 export const meta: MetaFunction = () => {
@@ -15,6 +16,24 @@ export default function PharmacyPatientChatPage() {
   const [patientName, setPatientName] = useState("Patient");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Initialize socket connection and join conversation room
+  useEffect(() => {
+    // Initialize socket
+    socketService.initializeSocket();
+
+    // If we have a conversation ID, join that room
+    if (conversationId) {
+      socketService.joinConversation(conversationId);
+    }
+
+    // Clean up on unmount
+    return () => {
+      if (conversationId) {
+        socketService.leaveConversation(conversationId);
+      }
+    };
+  }, [conversationId]);
 
   // Check if user is a pharmacy
   useEffect(() => {

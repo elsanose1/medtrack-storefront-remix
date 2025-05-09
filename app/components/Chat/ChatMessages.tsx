@@ -1,7 +1,11 @@
 import { useState, useEffect, useRef } from "react";
 import { chatService } from "~/services/chat.service";
 import { authService } from "~/services/auth.service";
-import { socketService } from "~/services/socket.service";
+import {
+  socketService,
+  ChatMessage,
+  SimplifiedChatMessage,
+} from "~/services/socket.service";
 
 interface Message {
   _id: string;
@@ -11,6 +15,30 @@ interface Message {
   content: string;
   createdAt: string;
   readAt?: string;
+}
+
+// Define a more complete interface for backend messages
+interface BackendChatMessage {
+  _id: string;
+  sender: {
+    _id: string;
+    username?: string;
+    firstName: string;
+    lastName: string;
+    userType: string;
+  };
+  receiver: {
+    _id: string;
+    username?: string;
+    firstName: string;
+    lastName: string;
+    userType: string;
+  };
+  message: string;
+  conversation?: string; // Optional because it might be missing in some messages
+  read: boolean;
+  createdAt: string;
+  __v: number;
 }
 
 interface ChatMessagesProps {
@@ -30,7 +58,19 @@ export default function ChatMessages({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const currentUserId = authService.getUserInfo()?._id || "";
 
-  // Fetch messages when component mounts or conversation changes
+  // Initialize socket connection when component mounts
+  useEffect(() => {
+    socketService.initializeSocket();
+    // Clean up on unmount
+    return () => {
+      socketService.removeMessageListener();
+      if (conversationId) {
+        socketService.leaveConversation(conversationId);
+      }
+    };
+  }, []);
+
+  // Fetch messages and join conversation room when conversation changes
   useEffect(() => {
     const fetchMessages = async () => {
       try {
@@ -51,31 +91,117 @@ export default function ChatMessages({
 
     if (conversationId) {
       fetchMessages();
+      // Join the conversation room via Socket.IO
+      socketService.joinConversation(conversationId);
     } else {
       setError("No conversation ID provided");
       setLoading(false);
     }
+
+    // Leave the conversation room when component unmounts or conversation changes
+    return () => {
+      if (conversationId) {
+        socketService.leaveConversation(conversationId);
+      }
+    };
   }, [conversationId]);
 
   // Setup socket listening for new messages
   useEffect(() => {
-    const socket = socketService.getSocket();
+    // Handler for new messages
+    const handleNewMessage = (
+      message: ChatMessage | SimplifiedChatMessage | BackendChatMessage
+    ) => {
+      console.log("New message received via socket:", message);
+      console.log("Current conversation ID:", conversationId);
 
-    if (socket) {
-      // Listen for new messages in this conversation
-      const handleNewMessage = (message: Message) => {
-        if (message.conversation === conversationId) {
-          setMessages((prevMessages) => [...prevMessages, message]);
+      // Extract or infer conversation ID from the message or use current conversation
+      const messageConversationId = message.conversation || conversationId;
+      console.log("Message conversation ID:", messageConversationId);
+
+      // Compare the conversation IDs as strings to ensure consistent matching
+      const isForCurrentConversation =
+        String(messageConversationId) === String(conversationId);
+      console.log("Is for current conversation:", isForCurrentConversation);
+
+      // Make sure it's for this conversation or if no conversation ID is present in message
+      if (isForCurrentConversation) {
+        // Determine the message format and create a standardized Message object
+        let newMessage: Message;
+
+        // Handle the expected ChatMessage format from socket.service.ts or BackendChatMessage
+        if (
+          typeof message.sender === "object" &&
+          message.sender !== null &&
+          "message" in message
+        ) {
+          newMessage = {
+            _id: message._id,
+            conversation: messageConversationId,
+            sender: message.sender._id,
+            senderName:
+              message.sender.username ||
+              `${message.sender.firstName} ${message.sender.lastName}`,
+            content: message.message,
+            createdAt: message.createdAt,
+            readAt: message.read ? new Date().toISOString() : undefined,
+          };
         }
-      };
+        // Handle the simplified format (string sender ID, content instead of message)
+        else {
+          const typedMessage = message as SimplifiedChatMessage;
+          newMessage = {
+            _id: typedMessage._id,
+            conversation: messageConversationId,
+            sender: typedMessage.sender,
+            senderName: typedMessage.senderName || "Unknown",
+            content: typedMessage.content,
+            createdAt: typedMessage.createdAt,
+            readAt: typedMessage.read ? new Date().toISOString() : undefined,
+          };
+        }
 
-      socket.on("new_message", handleNewMessage);
+        console.log("Processed new message:", newMessage);
 
-      return () => {
-        socket.off("new_message", handleNewMessage);
-      };
-    }
-  }, [conversationId]);
+        // Add the message if it's not already in our list
+        setMessages((prevMessages) => {
+          // Check if we already have this message by ID
+          if (
+            prevMessages.some((m) => String(m._id) === String(newMessage._id))
+          ) {
+            console.log("Message already exists in list, not adding duplicate");
+            return prevMessages;
+          }
+          console.log("Adding new message to list");
+          return [...prevMessages, newMessage];
+        });
+
+        // If this is a message from the other person, mark it as read
+        if (newMessage.sender !== currentUserId) {
+          chatService.markAsRead(conversationId).catch((err) => {
+            console.error("Failed to mark messages as read:", err);
+          });
+        }
+      } else {
+        console.log("Message is not for this conversation, ignoring");
+      }
+    };
+
+    // Setup the message listener
+    socketService.setupMessageListener(handleNewMessage);
+
+    // Setup messages read listener
+    socketService.setupMessagesReadListener((data) => {
+      // Update UI to show messages as read (if needed)
+      console.log("Messages marked as read:", data);
+    });
+
+    // Clean up on effect cleanup
+    return () => {
+      socketService.removeMessageListener();
+      socketService.removeMessagesReadListener();
+    };
+  }, [conversationId, currentUserId]);
 
   // Scroll to bottom when messages change
   useEffect(() => {
@@ -118,9 +244,32 @@ export default function ChatMessages({
 
       console.log("Message sent response:", sentMessage);
 
-      // If the message was sent successfully and not already added by socket, add it to the list
-      if (sentMessage && !messages.some((m) => m._id === sentMessage._id)) {
-        setMessages((prevMessages) => [...prevMessages, sentMessage]);
+      // IMPORTANT: We no longer automatically add the sent message to the list
+      // The socket will handle adding the message to prevent duplicates
+      // This fixes the issue with messages being duplicated in patients/chat
+
+      // Only add the message if we don't get a socket message (backup mechanism)
+      if (sentMessage) {
+        // Set a short timeout to wait for the socket message
+        const messageId = sentMessage._id;
+        const messageContent = sentMessage.content;
+
+        setTimeout(() => {
+          // Check if message has been added by socket already
+          setMessages((prevMessages) => {
+            if (prevMessages.some((m) => m._id === messageId)) {
+              console.log(
+                "Message already added by socket, skipping manual add"
+              );
+              return prevMessages;
+            }
+            console.log(
+              "Socket didn't add message, adding manually:",
+              messageContent
+            );
+            return [...prevMessages, sentMessage];
+          });
+        }, 1000); // Wait 1 second for socket to deliver message
       } else if (!sentMessage) {
         console.error("Failed to send message: No message data returned");
         setError("Failed to send message. Please try again.");

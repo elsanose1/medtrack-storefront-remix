@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from "@remix-run/react";
 import ChatMessages from "~/components/Chat/ChatMessages";
 import ConversationList from "~/components/Chat/ConversationList";
 import { chatService } from "~/services/chat.service";
+import { socketService } from "~/services/socket.service";
 import type { MetaFunction } from "@remix-run/node";
 
 export const meta: MetaFunction = () => {
@@ -17,6 +18,24 @@ export default function ChatPage() {
   const [pharmacyName, setPharmacyName] = useState("Pharmacy");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Initialize socket connection and join conversation room
+  useEffect(() => {
+    // Initialize socket
+    socketService.initializeSocket();
+
+    // If we have a conversation ID, join that room
+    if (conversationId) {
+      socketService.joinConversation(conversationId);
+    }
+
+    // Clean up on unmount
+    return () => {
+      if (conversationId) {
+        socketService.leaveConversation(conversationId);
+      }
+    };
+  }, [conversationId]);
 
   useEffect(() => {
     // Verify required params
@@ -68,6 +87,11 @@ export default function ChatPage() {
             console.error("Failed to create conversation:", createErr);
             setError("Conversation not found and could not be created");
           }
+        }
+
+        // Mark messages as read when the conversation is loaded
+        if (conversation) {
+          await chatService.markAsRead(conversationId);
         }
       } catch (err) {
         console.error("Error fetching pharmacy details:", err);
