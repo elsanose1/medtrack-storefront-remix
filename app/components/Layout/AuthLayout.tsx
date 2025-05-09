@@ -91,24 +91,29 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
                 } transition-colors`}>
                 Dashboard
               </Link>
-              <Link
-                to="/medications"
-                className={`px-3 py-2 rounded-md text-sm font-medium ${
-                  isActive("/medications")
-                    ? "bg-indigo-100 text-indigo-700"
-                    : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
-                } transition-colors`}>
-                Medications
-              </Link>
-              <Link
-                to="/reminders"
-                className={`px-3 py-2 rounded-md text-sm font-medium ${
-                  isActive("/reminders")
-                    ? "bg-indigo-100 text-indigo-700"
-                    : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
-                } transition-colors`}>
-                Reminders
-              </Link>
+
+              {userType === "patient" && (
+                <Link
+                  to="/medications"
+                  className={`px-3 py-2 rounded-md text-sm font-medium ${
+                    isActive("/medications")
+                      ? "bg-indigo-100 text-indigo-700"
+                      : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                  } transition-colors`}>
+                  Medications
+                </Link>
+              )}
+              {userType === "patient" && (
+                <Link
+                  to="/reminders"
+                  className={`px-3 py-2 rounded-md text-sm font-medium ${
+                    isActive("/reminders")
+                      ? "bg-indigo-100 text-indigo-700"
+                      : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                  } transition-colors`}>
+                  Reminders
+                </Link>
+              )}
               <Link
                 to="/drugs"
                 className={`px-3 py-2 rounded-md text-sm font-medium ${
