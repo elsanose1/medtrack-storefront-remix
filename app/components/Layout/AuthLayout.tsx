@@ -118,15 +118,30 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
                 } transition-colors`}>
                 Drug Library
               </Link>
-              <Link
-                to="/pharmacies"
-                className={`px-3 py-2 rounded-md text-sm font-medium ${
-                  isActive("/pharmacies")
-                    ? "bg-indigo-100 text-indigo-700"
-                    : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
-                } transition-colors`}>
-                Pharmacies
-              </Link>
+              {/* Patient link for users of type pharmacy */}
+              {userType === "pharmacy" && (
+                <Link
+                  to="/patients"
+                  className={`px-3 py-2 rounded-md text-sm font-medium ${
+                    isActive("/patients")
+                      ? "bg-indigo-100 text-indigo-700"
+                      : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                  } transition-colors`}>
+                  Patients
+                </Link>
+              )}
+              {/* Pharmacies link for non-pharmacy users (patients) */}
+              {userType !== "pharmacy" && (
+                <Link
+                  to="/pharmacies"
+                  className={`px-3 py-2 rounded-md text-sm font-medium ${
+                    isActive("/pharmacies")
+                      ? "bg-indigo-100 text-indigo-700"
+                      : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                  } transition-colors`}>
+                  Pharmacies
+                </Link>
+              )}
             </nav>
 
             {/* User Menu */}
@@ -232,16 +247,32 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
             onClick={() => setMobileMenuOpen(false)}>
             Drug Library
           </Link>
-          <Link
-            to="/pharmacies"
-            className={`block px-3 py-2 rounded-md text-base font-medium ${
-              isActive("/pharmacies")
-                ? "bg-indigo-100 text-indigo-700"
-                : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
-            } transition-colors`}
-            onClick={() => setMobileMenuOpen(false)}>
-            Pharmacies
-          </Link>
+          {/* Patient link for users of type pharmacy */}
+          {userType === "pharmacy" && (
+            <Link
+              to="/patients"
+              className={`block px-3 py-2 rounded-md text-base font-medium ${
+                isActive("/patients")
+                  ? "bg-indigo-100 text-indigo-700"
+                  : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+              } transition-colors`}
+              onClick={() => setMobileMenuOpen(false)}>
+              Patients
+            </Link>
+          )}
+          {/* Pharmacies link for non-pharmacy users (patients) */}
+          {userType !== "pharmacy" && (
+            <Link
+              to="/pharmacies"
+              className={`block px-3 py-2 rounded-md text-base font-medium ${
+                isActive("/pharmacies")
+                  ? "bg-indigo-100 text-indigo-700"
+                  : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+              } transition-colors`}
+              onClick={() => setMobileMenuOpen(false)}>
+              Pharmacies
+            </Link>
+          )}
           <div className="px-3 py-2 text-sm text-gray-500">
             Logged in as{" "}
             <span className="font-medium text-gray-900">{username}</span>
