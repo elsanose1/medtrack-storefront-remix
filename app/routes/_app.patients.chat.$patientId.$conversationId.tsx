@@ -1,21 +1,19 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "@remix-run/react";
 import ChatMessages from "~/components/Chat/ChatMessages";
-import ConversationList from "~/components/Chat/ConversationList";
 import { chatService } from "~/services/chat.service";
+import { authService } from "~/services/auth.service";
 import { socketService } from "~/services/socket.service";
 import type { MetaFunction } from "@remix-run/node";
 
 export const meta: MetaFunction = () => {
-  return [{ title: "Chat with Pharmacy - MedTrack" }];
+  return [{ title: "Chat with Patient - MedTrack" }];
 };
 
-export default function ChatPage() {
-  const { pharmacyId, conversationId } = useParams();
-  console.log("testttttttttttttttt");
-
+export default function PharmacyPatientChatPage() {
+  const { patientId, conversationId } = useParams();
   const navigate = useNavigate();
-  const [pharmacyName, setPharmacyName] = useState("Pharmacy");
+  const [patientName, setPatientName] = useState("Patient");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -37,64 +35,61 @@ export default function ChatPage() {
     };
   }, [conversationId]);
 
+  // Check if user is a pharmacy
+  useEffect(() => {
+    const userInfo = authService.getUserInfo();
+    if (!userInfo || userInfo.userType !== "pharmacy") {
+      // Redirect non-pharmacy users to the dashboard
+      navigate("/dashboard");
+    }
+  }, [navigate]);
+
   useEffect(() => {
     // Verify required params
-    if (!pharmacyId || !conversationId) {
-      console.error(
-        "Missing required parameters: pharmacyId or conversationId"
-      );
-      navigate("/pharmacies");
+    if (!patientId || !conversationId) {
+      console.error("Missing required parameters: patientId or conversationId");
+      navigate("/patients");
       return;
     }
 
-    // Fetch pharmacy details and verify conversation belongs to this pharmacy
-    const fetchPharmacyDetails = async () => {
+    // Fetch patient details and verify conversation belongs to this patient
+    const fetchPatientDetails = async () => {
       try {
         setLoading(true);
 
-        // First get all pharmacies
-        const pharmacies = await chatService.getPharmacies();
-        if (!Array.isArray(pharmacies)) {
-          throw new Error("Invalid pharmacy data received");
-        }
-
-        const pharmacy = pharmacies.find((p) => p._id === pharmacyId);
-
-        if (!pharmacy) {
-          setError("Pharmacy not found");
-          return;
-        }
-
-        setPharmacyName(pharmacy.pharmacyName || "Pharmacy");
-
-        // Verify this conversation exists
+        // Get conversations
         const conversations = await chatService.getConversations();
         if (!Array.isArray(conversations)) {
           throw new Error("Invalid conversation data received");
         }
 
+        // Find this specific conversation
         const conversation = conversations.find(
           (c) => c._id === conversationId
         );
 
         if (!conversation) {
-          // Conversation not found, try to create one
-          try {
-            await chatService.createConversation(pharmacyId);
-            // Refresh the page to get the new conversation
-            // window.location.reload();
-          } catch (createErr) {
-            console.error("Failed to create conversation:", createErr);
-            setError("Conversation not found and could not be created");
-          }
+          setError("Conversation not found");
+          setLoading(false);
+          return;
         }
 
-        // Mark messages as read when the conversation is loaded
-        if (conversation) {
-          await chatService.markAsRead(conversationId);
+        // Find the patient in this conversation
+        const patient = conversation.participantDetails.find(
+          (p) => p._id === patientId && p.userType === "patient"
+        );
+
+        if (!patient) {
+          setError("Patient not found in this conversation");
+          setLoading(false);
+          return;
         }
+
+        // Set patient name
+        setPatientName(patient.username || "Patient");
+        setError(null);
       } catch (err) {
-        console.error("Error fetching pharmacy details:", err);
+        console.error("Error fetching patient details:", err);
         setError(
           typeof err === "object" && err !== null && "message" in err
             ? String(err.message)
@@ -105,8 +100,24 @@ export default function ChatPage() {
       }
     };
 
-    fetchPharmacyDetails();
-  }, [pharmacyId, conversationId, navigate]);
+    fetchPatientDetails();
+  }, [patientId, conversationId, navigate]);
+
+  // Mark messages as read when conversation is opened
+  useEffect(() => {
+    if (conversationId && !loading && !error) {
+      const markMessagesAsRead = async () => {
+        try {
+          await chatService.markAsRead(conversationId);
+          console.log("Messages marked as read");
+        } catch (err) {
+          console.error("Error marking messages as read:", err);
+        }
+      };
+
+      markMessagesAsRead();
+    }
+  }, [conversationId, loading, error]);
 
   if (loading) {
     return (
@@ -123,9 +134,9 @@ export default function ChatPage() {
           {error}
         </div>
         <Link
-          to="/pharmacies"
+          to="/patients"
           className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-          Back to Pharmacies
+          Back to Patients
         </Link>
       </div>
     );
@@ -134,32 +145,22 @@ export default function ChatPage() {
   return (
     <div className="space-y-6">
       <div className="border-b border-gray-200 pb-4 flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-900">Chat</h1>
+        <h1 className="text-2xl font-bold text-gray-900">Chat with Patient</h1>
         <Link
-          to="/pharmacies"
+          to="/patients"
           className="inline-flex items-center px-3 py-1 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-          Back to Pharmacies
+          Back to Patients
         </Link>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Conversation list */}
-        <div className="md:col-span-1">
-          <h2 className="text-lg font-medium text-gray-900 mb-4">
-            Conversations
-          </h2>
-          <ConversationList />
-        </div>
-
-        {/* Chat messages */}
-        <div className="md:col-span-2 bg-white rounded-lg shadow overflow-hidden border border-gray-200 h-[600px]">
-          {conversationId && (
-            <ChatMessages
-              conversationId={conversationId}
-              pharmacyName={pharmacyName}
-            />
-          )}
-        </div>
+      {/* Chat messages */}
+      <div className="bg-white rounded-lg shadow overflow-hidden border border-gray-200 h-[600px]">
+        {conversationId && (
+          <ChatMessages
+            conversationId={conversationId}
+            pharmacyName={patientName} // We're reusing the component but with patient name
+          />
+        )}
       </div>
     </div>
   );

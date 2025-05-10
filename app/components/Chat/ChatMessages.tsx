@@ -1,8 +1,11 @@
 import { useState, useEffect, useRef } from "react";
-import { useParams } from "@remix-run/react";
 import { chatService } from "~/services/chat.service";
 import { authService } from "~/services/auth.service";
-import { socketService } from "~/services/socket.service";
+import {
+  socketService,
+  ChatMessage,
+  SimplifiedChatMessage,
+} from "~/services/socket.service";
 
 interface Message {
   _id: string;
@@ -12,6 +15,31 @@ interface Message {
   content: string;
   createdAt: string;
   readAt?: string;
+  sentStatus?: "sending" | "sent" | "delivered" | "error";
+}
+
+// Define a more complete interface for backend messages
+interface BackendChatMessage {
+  _id: string;
+  sender: {
+    _id: string;
+    username?: string;
+    firstName: string;
+    lastName: string;
+    userType: string;
+  };
+  receiver: {
+    _id: string;
+    username?: string;
+    firstName: string;
+    lastName: string;
+    userType: string;
+  };
+  message: string;
+  conversation?: string; // Optional because it might be missing in some messages
+  read: boolean;
+  createdAt: string;
+  __v: number;
 }
 
 interface ChatMessagesProps {
@@ -31,7 +59,19 @@ export default function ChatMessages({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const currentUserId = authService.getUserInfo()?._id || "";
 
-  // Fetch messages when component mounts or conversation changes
+  // Initialize socket connection when component mounts
+  useEffect(() => {
+    socketService.initializeSocket();
+    // Clean up on unmount
+    return () => {
+      socketService.removeMessageListener();
+      if (conversationId) {
+        socketService.leaveConversation(conversationId);
+      }
+    };
+  }, []);
+
+  // Fetch messages and join conversation room when conversation changes
   useEffect(() => {
     const fetchMessages = async () => {
       try {
@@ -52,31 +92,207 @@ export default function ChatMessages({
 
     if (conversationId) {
       fetchMessages();
+      // Join the conversation room via Socket.IO
+      socketService.joinConversation(conversationId);
     } else {
       setError("No conversation ID provided");
       setLoading(false);
     }
+
+    // Leave the conversation room when component unmounts or conversation changes
+    return () => {
+      if (conversationId) {
+        socketService.leaveConversation(conversationId);
+      }
+    };
   }, [conversationId]);
 
   // Setup socket listening for new messages
   useEffect(() => {
-    const socket = socketService.getSocket();
+    // Handler for new messages
+    const handleNewMessage = (
+      message: ChatMessage | SimplifiedChatMessage | BackendChatMessage
+    ) => {
+      console.log("New message received via socket:", message);
+      console.log("Current conversation ID:", conversationId);
 
-    if (socket) {
-      // Listen for new messages in this conversation
-      const handleNewMessage = (message: Message) => {
-        if (message.conversation === conversationId) {
-          setMessages((prevMessages) => [...prevMessages, message]);
+      // Extract or infer conversation ID from the message or use current conversation
+      const messageConversationId = message.conversation || conversationId;
+      console.log("Message conversation ID:", messageConversationId);
+
+      // Compare the conversation IDs as strings to ensure consistent matching
+      const isForCurrentConversation =
+        String(messageConversationId) === String(conversationId);
+      console.log("Is for current conversation:", isForCurrentConversation);
+
+      // Make sure it's for this conversation or if no conversation ID is present in message
+      if (isForCurrentConversation) {
+        // Determine the message format and create a standardized Message object
+        let newMessage: Message;
+
+        // Handle the expected ChatMessage format from socket.service.ts or BackendChatMessage
+        if (
+          typeof message.sender === "object" &&
+          message.sender !== null &&
+          "message" in message
+        ) {
+          newMessage = {
+            _id: message._id,
+            conversation: messageConversationId,
+            sender: message.sender._id,
+            senderName:
+              message.sender.username ||
+              `${message.sender.firstName} ${message.sender.lastName}`,
+            content: message.message,
+            createdAt: message.createdAt,
+            readAt: message.read ? new Date().toISOString() : undefined,
+            sentStatus: "delivered", // Mark as delivered when received via socket
+          };
         }
-      };
+        // Handle the simplified format (string sender ID, content instead of message)
+        else {
+          const typedMessage = message as SimplifiedChatMessage;
+          newMessage = {
+            _id: typedMessage._id,
+            conversation: messageConversationId,
+            sender: typedMessage.sender,
+            senderName: typedMessage.senderName || "Unknown",
+            content: typedMessage.content,
+            createdAt: typedMessage.createdAt,
+            readAt: typedMessage.read ? new Date().toISOString() : undefined,
+            sentStatus: "delivered", // Mark as delivered when received via socket
+          };
+        }
 
-      socket.on("new_message", handleNewMessage);
+        console.log("Processed new message:", newMessage);
 
-      return () => {
-        socket.off("new_message", handleNewMessage);
-      };
-    }
-  }, [conversationId]);
+        // Add the message if it's not already in our list
+        setMessages((prevMessages) => {
+          // Check for duplicates with more criteria:
+          // 1. Same ID
+          // 2. Same content and sender within last 5 seconds (to catch socket duplicates)
+          // 3. Temporary message with same content
+          const now = new Date();
+          const fiveSecondsAgo = new Date(now.getTime() - 5000);
+
+          const existingMessageIndex = prevMessages.findIndex(
+            (m) =>
+              // Exact ID match
+              String(m._id) === String(newMessage._id) ||
+              // Temp message with matching content (our manual addition)
+              (m._id.startsWith("temp-") &&
+                m.content === newMessage.content &&
+                m.sender === newMessage.sender) ||
+              // Recent message with same content and sender (potential duplicate)
+              (m.content === newMessage.content &&
+                m.sender === newMessage.sender &&
+                new Date(m.createdAt) > fiveSecondsAgo)
+          );
+
+          if (existingMessageIndex >= 0) {
+            // We found this message - update it rather than add a duplicate
+            console.log(
+              "Updating existing message with ID:",
+              prevMessages[existingMessageIndex]._id
+            );
+
+            // Create a new array with the updated message
+            const updatedMessages = [...prevMessages];
+
+            // Preserve the readAt state if it exists
+            const readAt =
+              prevMessages[existingMessageIndex].readAt || newMessage.readAt;
+
+            // If this is replacing a temp message, use the new ID but keep the content
+            updatedMessages[existingMessageIndex] = {
+              ...newMessage,
+              readAt,
+              sentStatus: "delivered", // Update status to delivered
+            };
+
+            // Also update all previous messages from the same sender to have delivered status
+            for (let i = 0; i < updatedMessages.length; i++) {
+              if (
+                i !== existingMessageIndex &&
+                updatedMessages[i].sender === currentUserId &&
+                (updatedMessages[i].sentStatus === "sent" ||
+                  !updatedMessages[i].sentStatus)
+              ) {
+                updatedMessages[i] = {
+                  ...updatedMessages[i],
+                  sentStatus: "delivered",
+                };
+              }
+            }
+
+            return updatedMessages;
+          }
+
+          // If this is a new message, also update status of all previous messages
+          const newMessages = [...prevMessages, newMessage];
+
+          // Update all older messages from current user to "delivered" status
+          if (newMessage.sender !== currentUserId) {
+            for (let i = 0; i < newMessages.length - 1; i++) {
+              if (
+                newMessages[i].sender === currentUserId &&
+                (newMessages[i].sentStatus === "sent" ||
+                  !newMessages[i].sentStatus)
+              ) {
+                newMessages[i] = {
+                  ...newMessages[i],
+                  sentStatus: "delivered",
+                };
+              }
+            }
+          }
+
+          console.log("Adding new message to list");
+          return newMessages;
+        });
+
+        // If this is a message from the other person, mark it as read
+        if (newMessage.sender !== currentUserId) {
+          chatService.markAsRead(conversationId).catch((err) => {
+            console.error("Failed to mark messages as read:", err);
+          });
+        }
+      } else {
+        console.log("Message is not for this conversation, ignoring");
+      }
+    };
+
+    // Setup the message listener
+    socketService.setupMessageListener(handleNewMessage);
+
+    // Setup messages read listener
+    socketService.setupMessagesReadListener((data) => {
+      // Update UI to show messages as read
+      console.log("Messages marked as read:", data);
+
+      if (data && data.conversationId === conversationId) {
+        // Update all messages sent by current user to show as read
+        setMessages((prevMessages) => {
+          return prevMessages.map((msg) => {
+            // Only update messages from current user that don't have a readAt time
+            if (msg.sender === currentUserId && !msg.readAt) {
+              return {
+                ...msg,
+                readAt: new Date().toISOString(),
+              };
+            }
+            return msg;
+          });
+        });
+      }
+    });
+
+    // Clean up on effect cleanup
+    return () => {
+      socketService.removeMessageListener();
+      socketService.removeMessagesReadListener();
+    };
+  }, [conversationId, currentUserId]);
 
   // Scroll to bottom when messages change
   useEffect(() => {
@@ -107,25 +323,170 @@ export default function ChatMessages({
 
     if (!newMessage.trim() || !conversationId) return;
 
+    // Create a temporary message with 'sending' status to show in the UI immediately
+    const tempMessageId = `temp-${Date.now()}`;
+    const messageContent = newMessage.trim();
+
+    const tempMessage: Message = {
+      _id: tempMessageId,
+      conversation: conversationId,
+      sender: currentUserId,
+      senderName: authService.getUserInfo()?.username || "You",
+      content: messageContent,
+      createdAt: new Date().toISOString(),
+      sentStatus: "sending",
+    };
+
+    // Add the temporary message to the UI immediately
+    setMessages((prevMessages) => [...prevMessages, tempMessage]);
+
+    // Clear input immediately for better UX
+    setNewMessage("");
+
     try {
       setSending(true);
+      console.log("Sending message to conversation:", conversationId);
+      console.log("Message content:", messageContent);
+
       const sentMessage = await chatService.sendMessage(
         conversationId,
-        newMessage.trim()
+        messageContent
       );
 
-      // If the message was sent successfully and not already added by socket, add it to the list
-      if (sentMessage && !messages.some((m) => m._id === sentMessage._id)) {
-        setMessages((prevMessages) => [...prevMessages, sentMessage]);
-      }
+      console.log("Message sent response:", sentMessage);
 
-      setNewMessage("");
-      setError(null);
+      // Check if we've received this message via socket already
+      // If not, update the temporary message
+      if (sentMessage) {
+        // Set a very short delay to check if socket has already updated the message
+        setTimeout(() => {
+          setMessages((prevMessages) => {
+            // If temp message is gone or we have a message with the same ID as sentMessage,
+            // the socket has already handled it - no action needed
+            const tempMessageExists = prevMessages.some(
+              (m) => m._id === tempMessageId
+            );
+            const serverMessageExists = prevMessages.some(
+              (m) => String(m._id) === String(sentMessage._id)
+            );
+
+            // If socket has already handled this message, do nothing
+            if (!tempMessageExists || serverMessageExists) {
+              return prevMessages;
+            }
+
+            // Otherwise, update the temp message with the real message
+            return prevMessages.map((m) => {
+              if (m._id === tempMessageId) {
+                return {
+                  ...sentMessage,
+                  sentStatus: "sent", // Mark as just sent, will be updated to delivered later
+                };
+              }
+              return m;
+            });
+          });
+        }, 300); // very short delay to allow socket message to come in first
+      } else {
+        // If no message returned, update the temp message to error state
+        setMessages((prevMessages) => {
+          return prevMessages.map((m) => {
+            if (m._id === tempMessageId) {
+              return { ...m, sentStatus: "error" };
+            }
+            return m;
+          });
+        });
+
+        setError("Failed to send message. Please try again.");
+      }
     } catch (err) {
       console.error("Failed to send message:", err);
-      setError("Failed to send message. Please try again.");
+
+      // Update the temporary message to show error
+      setMessages((prevMessages) => {
+        return prevMessages.map((m) => {
+          if (m._id === tempMessageId) {
+            return { ...m, sentStatus: "error" };
+          }
+          return m;
+        });
+      });
+
+      setError(
+        typeof err === "object" && err !== null && "message" in err
+          ? String(err.message)
+          : "Failed to send message. Please try again."
+      );
     } finally {
       setSending(false);
+    }
+  };
+
+  // Add a function to retry sending failed messages
+  const handleRetryMessage = async (messageId: string, content: string) => {
+    // Find and update the failed message status to 'sending'
+    setMessages((prevMessages) =>
+      prevMessages.map((msg) => {
+        if (msg._id === messageId) {
+          return { ...msg, sentStatus: "sending" };
+        }
+        return msg;
+      })
+    );
+
+    try {
+      console.log("Retrying message:", content);
+
+      // Attempt to send the message again
+      const sentMessage = await chatService.sendMessage(
+        conversationId,
+        content
+      );
+
+      if (sentMessage) {
+        // Replace the failed message with the new sent message
+        setMessages((prevMessages) =>
+          prevMessages.map((msg) => {
+            if (msg._id === messageId) {
+              return {
+                ...sentMessage,
+                sentStatus: "sent",
+              };
+            }
+            return msg;
+          })
+        );
+      } else {
+        // If still failing, update status back to error
+        setMessages((prevMessages) =>
+          prevMessages.map((msg) => {
+            if (msg._id === messageId) {
+              return { ...msg, sentStatus: "error" };
+            }
+            return msg;
+          })
+        );
+        setError("Failed to send message. Please try again.");
+      }
+    } catch (err) {
+      console.error("Failed to retry sending message:", err);
+
+      // Update the message back to error state
+      setMessages((prevMessages) =>
+        prevMessages.map((msg) => {
+          if (msg._id === messageId) {
+            return { ...msg, sentStatus: "error" };
+          }
+          return msg;
+        })
+      );
+
+      setError(
+        typeof err === "object" && err !== null && "message" in err
+          ? String(err.message)
+          : "Failed to send message. Please try again."
+      );
     }
   };
 
@@ -215,10 +576,135 @@ export default function ChatMessages({
                       }`}>
                       <div className="text-sm">{message.content}</div>
                       <div
-                        className={`text-xs mt-1 text-right ${
+                        className={`text-xs mt-1 text-right flex justify-end items-center ${
                           isCurrentUser ? "text-indigo-200" : "text-gray-500"
                         }`}>
-                        {formatMessageTime(message.createdAt)}
+                        {/* Message time */}
+                        <span className="mr-1">
+                          {formatMessageTime(message.createdAt)}
+                        </span>
+
+                        {/* Error retry button */}
+                        {isCurrentUser && message.sentStatus === "error" && (
+                          <button
+                            onClick={() =>
+                              handleRetryMessage(message._id, message.content)
+                            }
+                            className="mr-1 text-red-300 hover:text-red-200"
+                            title="Retry sending this message">
+                            <svg
+                              className="w-3.5 h-3.5"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor">
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                              />
+                            </svg>
+                          </button>
+                        )}
+
+                        {/* Message status indicators (only show for current user's messages) */}
+                        {isCurrentUser && (
+                          <span className="ml-1 flex items-center">
+                            {/* Sending indicator */}
+                            {message.sentStatus === "sending" && (
+                              <svg
+                                className="w-3 h-3 text-indigo-200"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                                />
+                              </svg>
+                            )}
+
+                            {/* Sent indicator */}
+                            {message.sentStatus === "sent" && (
+                              <svg
+                                className="w-3 h-3 text-indigo-200"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M5 13l4 4L19 7"
+                                />
+                              </svg>
+                            )}
+
+                            {/* Delivered indicator */}
+                            {message.sentStatus === "delivered" &&
+                              !message.readAt && (
+                                <svg
+                                  className="w-3.5 h-3.5 text-indigo-200"
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                  stroke="currentColor">
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M5 13l4 4L19 7"
+                                  />
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={1.5}
+                                    d="M9 13l4 4L23 7"
+                                    strokeOpacity="0.7"
+                                  />
+                                </svg>
+                              )}
+
+                            {/* Read indicator */}
+                            {message.readAt && (
+                              <svg
+                                className="w-3.5 h-3.5 text-indigo-200"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor">
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M5 13l4 4L19 7"
+                                />
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M9 13l4 4L23 7"
+                                />
+                              </svg>
+                            )}
+
+                            {/* Error indicator */}
+                            {message.sentStatus === "error" && (
+                              <svg
+                                className="w-3 h-3 text-red-400"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                                />
+                              </svg>
+                            )}
+                          </span>
+                        )}
                       </div>
                     </div>
                   </div>

@@ -2,6 +2,35 @@ import { useState, useEffect } from "react";
 import { Link, useLocation } from "@remix-run/react";
 import { chatService } from "~/services/chat.service";
 import { authService } from "~/services/auth.service";
+import {
+  socketService,
+  ChatMessage,
+  SimplifiedChatMessage,
+} from "~/services/socket.service";
+
+// Define a more complete interface for backend messages
+interface BackendChatMessage {
+  _id: string;
+  sender: {
+    _id: string;
+    username?: string;
+    firstName: string;
+    lastName: string;
+    userType: string;
+  };
+  receiver: {
+    _id: string;
+    username?: string;
+    firstName: string;
+    lastName: string;
+    userType: string;
+  };
+  message: string;
+  conversation?: string; // Optional because it might be missing in some messages
+  read: boolean;
+  createdAt: string;
+  __v: number;
+}
 
 interface Conversation {
   _id: string;
@@ -45,6 +74,104 @@ export default function ConversationList() {
     };
 
     fetchConversations();
+  }, []);
+
+  // Set up socket listener for new messages to update conversation list
+  useEffect(() => {
+    // Initialize socket if not already done
+    socketService.initializeSocket();
+
+    // Handler function for new messages
+    const handleNewMessage = (
+      message: ChatMessage | SimplifiedChatMessage | BackendChatMessage
+    ) => {
+      console.log("New message received in ConversationList:", message);
+
+      // Find the correct conversation to update
+      // If we have a conversation ID in the message, use it
+      // If not, try to find a conversation between the sender and receiver
+      const findConversation = (
+        message: ChatMessage | SimplifiedChatMessage | BackendChatMessage
+      ) => {
+        if (message.conversation) {
+          // If message has conversation ID, use it
+          return message.conversation;
+        } else if (message.sender && "receiver" in message) {
+          // If no conversation ID but sender and receiver exist,
+          // try to find conversation with these participants
+          const senderId =
+            typeof message.sender === "object"
+              ? message.sender._id
+              : message.sender;
+          const receiverId =
+            typeof message.receiver === "object"
+              ? message.receiver._id
+              : message.receiver;
+
+          // Look for conversation with these participants
+          const conversation = conversations.find(
+            (conv) =>
+              conv.participants.some((p) => String(p) === String(senderId)) &&
+              conv.participants.some((p) => String(p) === String(receiverId))
+          );
+
+          return conversation?._id;
+        }
+        return null;
+      };
+
+      const conversationId = findConversation(message);
+      if (!conversationId) {
+        console.warn(
+          "Could not determine conversation ID for message:",
+          message
+        );
+        return;
+      }
+
+      // Update the conversation list with the new message
+      setConversations((prevConversations) => {
+        return prevConversations
+          .map((conv) => {
+            // Check if this message belongs to this conversation - use strict string comparison
+            if (String(conv._id) === String(conversationId)) {
+              // Extract the message content depending on the format
+              const messageContent =
+                "message" in message ? message.message : message.content;
+              const senderId =
+                typeof message.sender === "object"
+                  ? message.sender._id
+                  : message.sender;
+
+              // Update the conversation with the new last message
+              return {
+                ...conv,
+                lastMessage: {
+                  content: messageContent,
+                  sender: senderId,
+                  createdAt: message.createdAt,
+                },
+                updatedAt: message.createdAt,
+              };
+            }
+            return conv;
+          })
+          .sort((a, b) => {
+            // Sort conversations by last message time (most recent first)
+            const aTime = a.lastMessage?.createdAt || a.updatedAt;
+            const bTime = b.lastMessage?.createdAt || b.updatedAt;
+            return new Date(bTime).getTime() - new Date(aTime).getTime();
+          });
+      });
+    };
+
+    // Set up the message listener
+    socketService.setupMessageListener(handleNewMessage);
+
+    // Clean up function
+    return () => {
+      socketService.removeMessageListener();
+    };
   }, []);
 
   // Add a function to refresh conversations
