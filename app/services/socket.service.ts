@@ -13,6 +13,7 @@ export interface MedicationReminderNotification {
   instructions?: string;
   notes?: string;
   isTestReminder?: boolean;
+  advance?: number; // 4 or 1 for advance notifications
 }
 
 export interface ChatMessage {

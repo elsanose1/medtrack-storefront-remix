@@ -162,7 +162,7 @@ export default function MedicationsPage() {
           </div>
         ) : (
           <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
-            <table className="min-w-full divide-y divide-gray-300">
+            <table className="min-w-full divide-y divide-gray-300 ">
               <thead className="bg-gray-50">
                 <tr>
                   <th
@@ -172,7 +172,7 @@ export default function MedicationsPage() {
                   </th>
                   <th
                     scope="col"
-                    className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                    className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 ">
                     Dosage
                   </th>
                   <th
@@ -188,6 +188,7 @@ export default function MedicationsPage() {
                   <th scope="col" className="relative py-3.5 pl-3 pr-4 sm:pr-6">
                     <span className="sr-only">Actions</span>
                   </th>
+                  
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 bg-white">
@@ -201,7 +202,7 @@ export default function MedicationsPage() {
                         {medication.genericName}
                       </div>
                     </td>
-                    <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                    <td className="whitespace-wrap px-3 py-4 text-sm  text-gray-500">
                       {medication.dosage}
                     </td>
                     <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">

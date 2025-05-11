@@ -33,6 +33,8 @@ export default function Register() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [serverError, setServerError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -176,31 +178,39 @@ export default function Register() {
     }
   };
 
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
+
+  const toggleConfirmPasswordVisibility = () => {
+    setShowConfirmPassword(!showConfirmPassword);
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4 py-12">
-      <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-lg shadow-md">
+    <div className="min-h-screen flex items-center justify-center bg-neutral-100 px-4 py-12">
+      <div className="max-w-md w-full space-y-8 bg-neutral-50 p-8 rounded-lg shadow-md">
         <div className="text-center">
           <Link to="/" className="block">
-            <h1 className="text-4xl font-bold tracking-tight text-gray-900">
-              <span className="text-indigo-600">Med</span>Track
+            <h1 className="text-4xl font-bold tracking-tight text-neutral-900">
+              <span className="text-blue-500">Med</span>Track
             </h1>
           </Link>
-          <h1 className="mt-4 text-3xl font-extrabold text-gray-900">
+          <h1 className="mt-4 text-3xl font-extrabold text-neutral-900">
             Create an Account
           </h1>
-          <p className="mt-2 text-sm text-gray-600">
+          <p className="mt-2 text-sm text-neutral-600">
             Sign up to track your medications and receive reminders
           </p>
         </div>
 
         {serverError && (
-          <div className="bg-red-50 text-red-600 p-4 rounded-md">
+          <div className="bg-error/10 text-error p-4 rounded-md">
             {serverError}
           </div>
         )}
 
         {successMessage && (
-          <div className="bg-green-50 text-green-600 p-4 rounded-md">
+          <div className="bg-success/10 text-success p-4 rounded-md">
             {successMessage}
           </div>
         )}
@@ -210,8 +220,8 @@ export default function Register() {
             <div>
               <label
                 htmlFor="firstName"
-                className="block text-sm font-medium text-gray-700 mb-1">
-                First Name*
+                className="block text-sm font-medium text-neutral-700 mb-1">
+                First Name
               </label>
               <input
                 id="firstName"
@@ -220,19 +230,19 @@ export default function Register() {
                 value={formData.firstName}
                 onChange={handleChange}
                 className={`appearance-none relative block w-full px-3 py-2 border ${
-                  errors.firstName ? "border-red-500" : "border-gray-300"
-                } bg-white text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500`}
+                  errors.firstName ? "border-error" : "border-neutral-300"
+                } bg-neutral-50 text-neutral-900 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500`}
               />
               {errors.firstName && (
-                <p className="mt-1 text-sm text-red-600">{errors.firstName}</p>
+                <p className="mt-1 text-sm text-error">{errors.firstName}</p>
               )}
             </div>
 
             <div>
               <label
                 htmlFor="lastName"
-                className="block text-sm font-medium text-gray-700 mb-1">
-                Last Name*
+                className="block text-sm font-medium text-neutral-700 mb-1">
+                Last Name
               </label>
               <input
                 id="lastName"
@@ -241,11 +251,11 @@ export default function Register() {
                 value={formData.lastName}
                 onChange={handleChange}
                 className={`appearance-none relative block w-full px-3 py-2 border ${
-                  errors.lastName ? "border-red-500" : "border-gray-300"
-                } bg-white text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500`}
+                  errors.lastName ? "border-error" : "border-neutral-300"
+                } bg-neutral-50 text-neutral-900 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500`}
               />
               {errors.lastName && (
-                <p className="mt-1 text-sm text-red-600">{errors.lastName}</p>
+                <p className="mt-1 text-sm text-error">{errors.lastName}</p>
               )}
             </div>
           </div>
@@ -253,8 +263,8 @@ export default function Register() {
           <div>
             <label
               htmlFor="email"
-              className="block text-sm font-medium text-gray-700 mb-1">
-              Email*
+              className="block text-sm font-medium text-neutral-700 mb-1">
+              Email
             </label>
             <input
               id="email"
@@ -264,26 +274,26 @@ export default function Register() {
               value={formData.email}
               onChange={handleChange}
               className={`appearance-none relative block w-full px-3 py-2 border ${
-                errors.email ? "border-red-500" : "border-gray-300"
-              } bg-white text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500`}
+                errors.email ? "border-error" : "border-neutral-300"
+              } bg-neutral-50 text-neutral-900 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500`}
             />
             {errors.email && (
-              <p className="mt-1 text-sm text-red-600">{errors.email}</p>
+              <p className="mt-1 text-sm text-error">{errors.email}</p>
             )}
           </div>
 
           <div>
             <label
               htmlFor="userType"
-              className="block text-sm font-medium text-gray-700 mb-1">
-              Account Type*
+              className="block text-sm font-medium text-neutral-700 mb-1">
+              Account Type
             </label>
             <select
               id="userType"
               name="userType"
               value={formData.userType}
               onChange={handleChange}
-              className="appearance-none relative block w-full px-3 py-2 border border-gray-300 bg-white text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+              className="appearance-none relative block w-full px-3 py-2 border border-neutral-300 bg-neutral-50 text-neutral-900 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500">
               <option value="PATIENT">Patient</option>
               <option value="PHARMACY">Pharmacy</option>
             </select>
@@ -295,8 +305,8 @@ export default function Register() {
               <div>
                 <label
                   htmlFor="pharmacyName"
-                  className="block text-sm font-medium text-gray-700 mb-1">
-                  Pharmacy Name*
+                  className="block text-sm font-medium text-neutral-700 mb-1">
+                  Pharmacy Name
                 </label>
                 <input
                   id="pharmacyName"
@@ -305,11 +315,11 @@ export default function Register() {
                   value={formData.pharmacyName}
                   onChange={handleChange}
                   className={`appearance-none relative block w-full px-3 py-2 border ${
-                    errors.pharmacyName ? "border-red-500" : "border-gray-300"
-                  } bg-white text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500`}
+                    errors.pharmacyName ? "border-error" : "border-neutral-300"
+                  } bg-neutral-50 text-neutral-900 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500`}
                 />
                 {errors.pharmacyName && (
-                  <p className="mt-1 text-sm text-red-600">
+                  <p className="mt-1 text-sm text-error">
                     {errors.pharmacyName}
                   </p>
                 )}
@@ -318,8 +328,8 @@ export default function Register() {
               <div>
                 <label
                   htmlFor="licenseNumber"
-                  className="block text-sm font-medium text-gray-700 mb-1">
-                  License Number*
+                  className="block text-sm font-medium text-neutral-700 mb-1">
+                  License Number
                 </label>
                 <input
                   id="licenseNumber"
@@ -328,11 +338,11 @@ export default function Register() {
                   value={formData.licenseNumber}
                   onChange={handleChange}
                   className={`appearance-none relative block w-full px-3 py-2 border ${
-                    errors.licenseNumber ? "border-red-500" : "border-gray-300"
-                  } bg-white text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500`}
+                    errors.licenseNumber ? "border-error" : "border-neutral-300"
+                  } bg-neutral-50 text-neutral-900 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500`}
                 />
                 {errors.licenseNumber && (
-                  <p className="mt-1 text-sm text-red-600">
+                  <p className="mt-1 text-sm text-error">
                     {errors.licenseNumber}
                   </p>
                 )}
@@ -341,8 +351,8 @@ export default function Register() {
               <div>
                 <label
                   htmlFor="phoneNumber"
-                  className="block text-sm font-medium text-gray-700 mb-1">
-                  Phone Number*
+                  className="block text-sm font-medium text-neutral-700 mb-1">
+                  Phone Number
                 </label>
                 <input
                   id="phoneNumber"
@@ -351,11 +361,11 @@ export default function Register() {
                   value={formData.phoneNumber}
                   onChange={handleChange}
                   className={`appearance-none relative block w-full px-3 py-2 border ${
-                    errors.phoneNumber ? "border-red-500" : "border-gray-300"
-                  } bg-white text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500`}
+                    errors.phoneNumber ? "border-error" : "border-neutral-300"
+                  } bg-neutral-50 text-neutral-900 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500`}
                 />
                 {errors.phoneNumber && (
-                  <p className="mt-1 text-sm text-red-600">
+                  <p className="mt-1 text-sm text-error">
                     {errors.phoneNumber}
                   </p>
                 )}
@@ -364,8 +374,8 @@ export default function Register() {
               <div>
                 <label
                   htmlFor="address"
-                  className="block text-sm font-medium text-gray-700 mb-1">
-                  Address*
+                  className="block text-sm font-medium text-neutral-700 mb-1">
+                  Address
                 </label>
                 <input
                   id="address"
@@ -374,11 +384,11 @@ export default function Register() {
                   value={formData.address}
                   onChange={handleChange}
                   className={`appearance-none relative block w-full px-3 py-2 border ${
-                    errors.address ? "border-red-500" : "border-gray-300"
-                  } bg-white text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500`}
+                    errors.address ? "border-error" : "border-neutral-300"
+                  } bg-neutral-50 text-neutral-900 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500`}
                 />
                 {errors.address && (
-                  <p className="mt-1 text-sm text-red-600">{errors.address}</p>
+                  <p className="mt-1 text-sm text-error">{errors.address}</p>
                 )}
               </div>
 
@@ -386,7 +396,7 @@ export default function Register() {
                 <div>
                   <label
                     htmlFor="city"
-                    className="block text-sm font-medium text-gray-700 mb-1">
+                    className="block text-sm font-medium text-neutral-700 mb-1">
                     City
                   </label>
                   <input
@@ -395,14 +405,14 @@ export default function Register() {
                     type="text"
                     value={formData.city}
                     onChange={handleChange}
-                    className="appearance-none relative block w-full px-3 py-2 border border-gray-300 bg-white text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                    className="appearance-none relative block w-full px-3 py-2 border border-neutral-300 bg-neutral-50 text-neutral-900 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                   />
                 </div>
 
                 <div>
                   <label
                     htmlFor="state"
-                    className="block text-sm font-medium text-gray-700 mb-1">
+                    className="block text-sm font-medium text-neutral-700 mb-1">
                     State
                   </label>
                   <input
@@ -411,14 +421,14 @@ export default function Register() {
                     type="text"
                     value={formData.state}
                     onChange={handleChange}
-                    className="appearance-none relative block w-full px-3 py-2 border border-gray-300 bg-white text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                    className="appearance-none relative block w-full px-3 py-2 border border-neutral-300 bg-neutral-50 text-neutral-900 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                   />
                 </div>
 
                 <div>
                   <label
                     htmlFor="zip"
-                    className="block text-sm font-medium text-gray-700 mb-1">
+                    className="block text-sm font-medium text-neutral-700 mb-1">
                     ZIP Code
                   </label>
                   <input
@@ -427,7 +437,7 @@ export default function Register() {
                     type="text"
                     value={formData.zip}
                     onChange={handleChange}
-                    className="appearance-none relative block w-full px-3 py-2 border border-gray-300 bg-white text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                    className="appearance-none relative block w-full px-3 py-2 border border-neutral-300 bg-neutral-50 text-neutral-900 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                   />
                 </div>
               </div>
@@ -446,8 +456,8 @@ export default function Register() {
               <div>
                 <label
                   htmlFor="dateOfBirth"
-                  className="block text-sm font-medium text-gray-700 mb-1">
-                  Date of Birth*
+                  className="block text-sm font-medium text-neutral-700 mb-1">
+                  Date of Birth
                 </label>
                 <input
                   id="dateOfBirth"
@@ -456,11 +466,11 @@ export default function Register() {
                   value={formData.dateOfBirth}
                   onChange={handleChange}
                   className={`appearance-none relative block w-full px-3 py-2 border ${
-                    errors.dateOfBirth ? "border-red-500" : "border-gray-300"
-                  } bg-white text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500`}
+                    errors.dateOfBirth ? "border-error" : "border-neutral-300"
+                  } bg-neutral-50 text-neutral-900 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500`}
                 />
                 {errors.dateOfBirth && (
-                  <p className="mt-1 text-sm text-red-600">
+                  <p className="mt-1 text-sm text-error">
                     {errors.dateOfBirth}
                   </p>
                 )}
@@ -469,7 +479,7 @@ export default function Register() {
               <div>
                 <label
                   htmlFor="phoneNumber"
-                  className="block text-sm font-medium text-gray-700 mb-1">
+                  className="block text-sm font-medium text-neutral-700 mb-1">
                   Phone Number
                 </label>
                 <input
@@ -478,14 +488,14 @@ export default function Register() {
                   type="tel"
                   value={formData.phoneNumber}
                   onChange={handleChange}
-                  className="appearance-none relative block w-full px-3 py-2 border border-gray-300 bg-white text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                  className="appearance-none relative block w-full px-3 py-2 border border-neutral-300 bg-neutral-50 text-neutral-900 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                 />
               </div>
 
               <div>
                 <label
                   htmlFor="address"
-                  className="block text-sm font-medium text-gray-700 mb-1">
+                  className="block text-sm font-medium text-neutral-700 mb-1">
                   Address
                 </label>
                 <input
@@ -494,14 +504,14 @@ export default function Register() {
                   type="text"
                   value={formData.address}
                   onChange={handleChange}
-                  className="appearance-none relative block w-full px-3 py-2 border border-gray-300 bg-white text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                  className="appearance-none relative block w-full px-3 py-2 border border-neutral-300 bg-neutral-50 text-neutral-900 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                 />
               </div>
 
               <div>
                 <label
                   htmlFor="medicalHistory"
-                  className="block text-sm font-medium text-gray-700 mb-1">
+                  className="block text-sm font-medium text-neutral-700 mb-1">
                   Medical History
                 </label>
                 <textarea
@@ -510,14 +520,14 @@ export default function Register() {
                   value={formData.medicalHistory}
                   onChange={handleChange}
                   rows={3}
-                  className="appearance-none relative block w-full px-3 py-2 border border-gray-300 bg-white text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                  className="appearance-none relative block w-full px-3 py-2 border border-neutral-300 bg-neutral-50 text-neutral-900 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                 />
               </div>
 
               <div>
                 <label
                   htmlFor="allergies"
-                  className="block text-sm font-medium text-gray-700 mb-1">
+                  className="block text-sm font-medium text-neutral-700 mb-1">
                   Allergies (comma separated)
                 </label>
                 <input
@@ -527,53 +537,93 @@ export default function Register() {
                   value={formData.allergies}
                   onChange={handleChange}
                   placeholder="e.g. Penicillin, Peanuts, Latex"
-                  className="appearance-none relative block w-full px-3 py-2 border border-gray-300 bg-white text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                  className="appearance-none relative block w-full px-3 py-2 border border-neutral-300 bg-neutral-50 text-neutral-900 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                 />
               </div>
             </div>
           )}
 
-          <div>
+          <div className="relative">
             <label
               htmlFor="password"
-              className="block text-sm font-medium text-gray-700 mb-1">
+              className="block text-sm font-medium text-neutral-700 mb-1">
               Password*
             </label>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              autoComplete="new-password"
-              value={formData.password}
-              onChange={handleChange}
-              className={`appearance-none relative block w-full px-3 py-2 border ${
-                errors.password ? "border-red-500" : "border-gray-300"
-              } bg-white text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500`}
-            />
+            <div className="relative">
+              <input
+                id="password"
+                name="password"
+                type={showPassword ? "text" : "password"}
+                autoComplete="new-password"
+                value={formData.password}
+                onChange={handleChange}
+                className={`appearance-none relative block w-full px-3 py-2 border ${
+                  errors.password ? "border-error" : "border-neutral-300"
+                } bg-neutral-50 text-neutral-900 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 pr-10`}
+              />
+              <button
+                type="button"
+                className="absolute inset-y-0 right-0 pr-3 flex items-center z-10"
+                onClick={togglePasswordVisibility}
+                aria-label={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? (
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-500" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M3.707 2.293a1 1 0 00-1.414 1.414l14 14a1 1 0 001.414-1.414l-1.473-1.473A10.014 10.014 0 0019.542 10C18.268 5.943 14.478 3 10 3a9.958 9.958 0 00-4.512 1.074l-1.78-1.781zm4.261 4.26l1.514 1.515a2.003 2.003 0 012.45 2.45l1.514 1.514a4 4 0 00-5.478-5.478z" clipRule="evenodd" />
+                    <path d="M12.454 16.697L9.75 13.992a4 4 0 01-3.742-3.741L2.335 6.578A9.98 9.98 0 00.458 10c1.274 4.057 5.065 7 9.542 7 .847 0 1.669-.105 2.454-.303z" />
+                  </svg>
+                ) : (
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-500" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                    <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" />
+                  </svg>
+                )}
+              </button>
+            </div>
             {errors.password && (
-              <p className="mt-1 text-sm text-red-600">{errors.password}</p>
+              <p className="mt-1 text-sm text-error">{errors.password}</p>
             )}
           </div>
 
-          <div>
+          <div className="relative">
             <label
               htmlFor="confirmPassword"
-              className="block text-sm font-medium text-gray-700 mb-1">
+              className="block text-sm font-medium text-neutral-700 mb-1">
               Confirm Password*
             </label>
-            <input
-              id="confirmPassword"
-              name="confirmPassword"
-              type="password"
-              autoComplete="new-password"
-              value={formData.confirmPassword}
-              onChange={handleChange}
-              className={`appearance-none relative block w-full px-3 py-2 border ${
-                errors.confirmPassword ? "border-red-500" : "border-gray-300"
-              } bg-white text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500`}
-            />
+            <div className="relative">
+              <input
+                id="confirmPassword"
+                name="confirmPassword"
+                type={showConfirmPassword ? "text" : "password"}
+                autoComplete="new-password"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                className={`appearance-none relative block w-full px-3 py-2 border ${
+                  errors.confirmPassword ? "border-error" : "border-neutral-300"
+                } bg-neutral-50 text-neutral-900 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 pr-10`}
+              />
+              <button
+                type="button"
+                className="absolute inset-y-0 right-0 pr-3 flex items-center z-10"
+                onClick={toggleConfirmPasswordVisibility}
+                aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+              >
+                {showConfirmPassword ? (
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-500" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M3.707 2.293a1 1 0 00-1.414 1.414l14 14a1 1 0 001.414-1.414l-1.473-1.473A10.014 10.014 0 0019.542 10C18.268 5.943 14.478 3 10 3a9.958 9.958 0 00-4.512 1.074l-1.78-1.781zm4.261 4.26l1.514 1.515a2.003 2.003 0 012.45 2.45l1.514 1.514a4 4 0 00-5.478-5.478z" clipRule="evenodd" />
+                    <path d="M12.454 16.697L9.75 13.992a4 4 0 01-3.742-3.741L2.335 6.578A9.98 9.98 0 00.458 10c1.274 4.057 5.065 7 9.542 7 .847 0 1.669-.105 2.454-.303z" />
+                  </svg>
+                ) : (
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-500" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                    <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" />
+                  </svg>
+                )}
+              </button>
+            </div>
             {errors.confirmPassword && (
-              <p className="mt-1 text-sm text-red-600">
+              <p className="mt-1 text-sm text-error">
                 {errors.confirmPassword}
               </p>
             )}
@@ -585,26 +635,26 @@ export default function Register() {
               disabled={isSubmitting}
               className={`group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white ${
                 isSubmitting
-                  ? "bg-indigo-400"
-                  : "bg-indigo-600 hover:bg-indigo-700"
-              } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500`}>
+                  ? "bg-blue-400"
+                  : "bg-blue-500 hover:bg-blue-700"
+              } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500`}>
               {isSubmitting ? "Creating Account..." : "Sign Up"}
             </button>
           </div>
 
           <div className="text-center text-sm">
-            <p className="text-gray-600">
+            <p className="text-neutral-600">
               Already have an account?{" "}
               <Link
                 to="/login"
-                className="font-medium text-indigo-600 hover:text-indigo-500">
+                className="font-medium text-blue-500 hover:text-primary-700">
                 Sign in
               </Link>
             </p>
-            <p className="mt-2 text-gray-600">
+            <p className="mt-2 text-neutral-600">
               <Link
                 to="/"
-                className="font-medium text-indigo-600 hover:text-indigo-500">
+                className="font-medium text-blue-500 hover:text-primary-700">
                 ← Back to Home
               </Link>
             </p>

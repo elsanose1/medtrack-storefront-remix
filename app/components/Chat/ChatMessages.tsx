@@ -724,8 +724,8 @@ export default function ChatMessages({
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
             placeholder="Type your message..."
-            className="flex-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-            disabled={sending}
+            className="flex-1 block w-full rounded-md bg-gray-300 border-gray-300 shadow-sm placeholder:text-gray-600 text-black focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+            disabled={sending}  
           />
           <button
             type="submit"

@@ -27,11 +27,35 @@ export default function MedicationDetailPage() {
           setMedication(response.data);
 
           // Fetch upcoming reminders for this medication
-          const upcomingResponse =
-            await medicationService.getMedicationReminders(id, "upcoming");
+         const upcomingResponse = await medicationService.getUpcomingReminders(
+          24 * 7
+        );
           if (upcomingResponse.success) {
-            setUpcomingReminders(upcomingResponse.data);
-          }
+          // Process upcoming reminders
+          const processed: Reminder[] = [];
+
+          // Iterate through medications
+          upcomingResponse.data.forEach((med: Medication) => {
+            // Process each reminder
+            if (med.reminders && Array.isArray(med.reminders)) {
+              med.reminders.forEach((reminder) => {
+                processed.push({
+                  _id: reminder._id,
+                  medicationId: med._id,
+                  medicationName: med.brandName,
+                  genericName: med.genericName || "",
+                  time: reminder.time,
+                  date: new Date(reminder.time).toLocaleDateString(),
+                  status: reminder.status || "active",
+                  notes: reminder.notes,
+                  instructions: med.instructions || "",
+                });
+              });
+            }
+          });
+
+          setUpcomingReminders(processed);
+        }
 
           // Fetch reminder history for this medication
           const historyResponse =

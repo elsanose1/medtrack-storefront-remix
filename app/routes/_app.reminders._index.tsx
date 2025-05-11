@@ -1,7 +1,11 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "@remix-run/react";
-import { medicationService } from "~/services/medication.service";
+import { medicationService } from "../services/medication.service";
 import type { MetaFunction } from "@remix-run/node";
+import toast, { Toaster } from "react-hot-toast";
+import { socketService } from "../services/socket.service";
+
+const notificationSound = "../../public/mixkit-bell-notification-933.wav";
 
 export const meta: MetaFunction = () => {
   return [{ title: "Reminders - MedTrack" }];
@@ -11,10 +15,12 @@ interface Reminder {
   _id: string;
   medicationId: string;
   medicationName: string;
+  genericName?: string;
   time: string;
   date: string;
   status: "active" | "snoozed" | "completed" | "missed";
   notes?: string;
+  instructions?: string;
 }
 
 interface GroupedReminders {
@@ -24,7 +30,9 @@ interface GroupedReminders {
 interface Medication {
   _id: string;
   brandName: string;
+  genericName?: string;
   dosage: string;
+  instructions?: string;
   reminders: {
     _id: string;
     time: string;
@@ -63,11 +71,13 @@ export default function RemindersPage() {
                 processed.push({
                   _id: reminder._id,
                   medicationId: med._id,
-                  medicationName: `${med.brandName} ${med.dosage}`,
+                  medicationName: med.brandName,
+                  genericName: med.genericName || "",
                   time: reminder.time,
                   date: new Date(reminder.time).toLocaleDateString(),
                   status: reminder.status || "active",
                   notes: reminder.notes,
+                  instructions: med.instructions || "",
                 });
               });
             }
@@ -88,6 +98,27 @@ export default function RemindersPage() {
     };
 
     fetchReminders();
+  }, []);
+
+  useEffect(() => {
+    // Listen for real-time medication reminders
+    socketService.setupMedicationReminderListener((reminder) => {
+      // Play notification sound
+      const audio = new Audio(notificationSound);
+      audio.play();
+      let msg = `تذكير جديد: ${reminder.medicationName} - ${new Date(reminder.time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`;
+      if (reminder.advance === 4) {
+        msg = `تنبيه: باقي 5 دقائق على موعد ${reminder.medicationName}`;
+          audio.play();
+      } else if (reminder.advance === 1) {
+        msg = `تنبيه: باقي دقيقة على موعد ${reminder.medicationName}`;
+          audio.play();
+      }
+      toast.success(msg, { duration: 5000, position: "bottom-right" });
+    });
+    return () => {
+      socketService.removeMedicationReminderListener();
+    };
   }, []);
 
   // Group reminders by date
@@ -129,6 +160,7 @@ export default function RemindersPage() {
 
   return (
     <div className="space-y-6">
+      <Toaster position="bottom-right" toastOptions={{ duration: 5000 }} />
       <div className="bg-white rounded-lg shadow-md p-6">
         <h1 className="text-2xl font-bold text-gray-800 mb-6">
           Medication Reminders
@@ -213,56 +245,66 @@ export default function RemindersPage() {
                       <h2 className="text-lg font-semibold text-gray-700">
                         {new Date(date).toLocaleDateString(undefined, {
                           weekday: "long",
-                          year: "numeric",
                           month: "long",
                           day: "numeric",
+                          year: "numeric",
                         })}
                       </h2>
-                      <div className="bg-gray-50 rounded-lg overflow-hidden">
-                        <ul className="divide-y divide-gray-200">
-                          {reminders
-                            .sort(
-                              (a, b) =>
-                                new Date(a.time).getTime() -
-                                new Date(b.time).getTime()
-                            )
-                            .map((reminder) => (
-                              <li
-                                key={reminder._id}
-                                className="px-4 py-3 flex justify-between items-center hover:bg-gray-100">
-                                <div>
-                                  <div className="flex items-center space-x-3">
-                                    <span className="text-sm font-medium text-gray-900">
-                                      {new Date(
-                                        reminder.time
-                                      ).toLocaleTimeString([], {
-                                        hour: "2-digit",
-                                        minute: "2-digit",
-                                      })}
-                                    </span>
-                                    <span className="font-medium text-gray-800">
-                                      {reminder.medicationName}
-                                    </span>
-                                  </div>
-                                  {reminder.notes && (
-                                    <p className="text-sm text-gray-500 mt-1">
-                                      {reminder.notes}
-                                    </p>
-                                  )}
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {reminders
+                          .sort(
+                            (a, b) =>
+                              new Date(a.time).getTime() -
+                              new Date(b.time).getTime()
+                          )
+                          .map((reminder) => (
+                            <div
+                              key={reminder._id}
+                              className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+                              <div className="p-4">
+                                <div className="text-right text-sm text-gray-500 mb-2">
+                                  {new Date(reminder.time).toLocaleTimeString([], {
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                  })}
                                 </div>
-                                <button
-                                  onClick={() =>
-                                    handleTriggerTestReminder(
-                                      reminder.medicationId,
-                                      reminder._id
-                                    )
-                                  }
-                                  className="text-xs bg-gray-200 hover:bg-gray-300 text-gray-800 px-2 py-1 rounded">
-                                  Test
-                                </button>
-                              </li>
-                            ))}
-                        </ul>
+                                <div className="uppercase font-bold text-gray-900">
+                                  {reminder.medicationName}
+                                </div>
+                                {reminder.genericName && (
+                                  <div className="uppercase text-sm text-gray-600">
+                                    {reminder.genericName}
+                                  </div>
+                                )}
+                                {reminder.instructions && (
+                                  <div className="mt-2 text-sm text-gray-700">
+                                    <div className="font-medium">Directions:</div> 
+                                    <div className="text-xs mt-1">{reminder.instructions}</div>
+                                  </div>
+                                )}
+                                <div className="mt-4 flex justify-between">
+                                  <button
+                                    onClick={() =>
+                                      handleTriggerTestReminder(
+                                        reminder.medicationId,
+                                        reminder._id
+                                      )
+                                    }
+                                    className="text-xs bg-gray-100 hover:bg-gray-200 text-gray-800 px-2 py-1 rounded">
+                                    Test
+                                  </button>
+                                  <div className="flex space-x-2">
+                                    <button className="text-xs bg-red-100 hover:bg-red-200 text-red-700 px-2 py-1 rounded">
+                                      Skip
+                                    </button>
+                                    <button className="text-xs bg-green-100 hover:bg-green-200 text-green-700 px-2 py-1 rounded">
+                                      Done
+                                    </button>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
                       </div>
                     </div>
                   ))}
@@ -279,7 +321,7 @@ export default function RemindersPage() {
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+                    d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1-18 0Z"
                   />
                 </svg>
                 <h3 className="mt-4 text-lg font-medium text-gray-700">
@@ -443,7 +485,7 @@ export default function RemindersPage() {
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   strokeWidth={2}
-                  d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                  d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2"
                 />
               </svg>
             </div>

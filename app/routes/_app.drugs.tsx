@@ -139,7 +139,7 @@ export default function DrugsPage() {
               <input
                 type="text"
                 id="search"
-                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                className="block w-full rounded-md border text-gray-900 border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 bg-white placeholder:text-black"
                 placeholder="Search by medication name..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}

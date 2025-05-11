@@ -6,6 +6,10 @@ const API_URL = "http://localhost:3000/api";
 interface LoginCredentials {
   email: string;
   password: string;
+  location?: {
+    latitude: number;
+    longitude: number;
+  };
 }
 
 interface RegisterData {
