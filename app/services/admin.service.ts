@@ -57,4 +57,12 @@ export const adminService = {
     );
     return res.data;
   },
+  async unverifyPharmacy(pharmacyId: string) {
+    const res = await axios.put(
+      `${API_URL}/admin/pharmacies/${pharmacyId}/deverify`,
+      {},
+      { headers: getAuthHeaders() }
+    );
+    return res.data;
+  },
 };

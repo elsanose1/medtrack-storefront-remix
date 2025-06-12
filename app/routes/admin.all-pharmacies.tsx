@@ -15,6 +15,8 @@ export default function AllPharmaciesPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const [page, setPage] = useState(1);
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [actionMessage, setActionMessage] = useState<string>("");
   const perPage = 10;
 
   useEffect(() => {
@@ -33,6 +35,20 @@ export default function AllPharmaciesPage() {
     fetchData();
   }, []);
 
+  const handleUnverify = async (pharmacyId: string) => {
+    setActionLoading(pharmacyId);
+    setActionMessage("");
+    try {
+      await adminService.unverifyPharmacy(pharmacyId);
+      setPharmacies((prev) => prev.filter((p) => p._id !== pharmacyId));
+      setActionMessage("Pharmacy unverified.");
+    } catch (err) {
+      setActionMessage("Failed to unverify pharmacy. Please try again.");
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
   const totalPages = Math.ceil(pharmacies.length / perPage);
   const paginated = pharmacies.slice((page - 1) * perPage, page * perPage);
 
@@ -47,6 +63,11 @@ export default function AllPharmaciesPage() {
             Back to Dashboard
           </Link>
         </div>
+        {actionMessage && (
+          <div className="mb-4 text-center text-sm text-green-700 bg-green-100 rounded p-2">
+            {actionMessage}
+          </div>
+        )}
         {isLoading ? (
           <div className="flex justify-center items-center h-64">
             <div className="text-center">
@@ -91,16 +112,13 @@ export default function AllPharmaciesPage() {
                         {pharm.phoneNumber || "-"}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-gray-800">
-                        {/* Future actions: View/Edit/Delete */}
                         <button
-                          className="px-3 py-1 rounded bg-blue-600 text-white text-xs font-medium hover:bg-blue-700 disabled:opacity-50 mr-2"
-                          disabled>
-                          View
-                        </button>
-                        <button
-                          className="px-3 py-1 rounded bg-gray-400 text-white text-xs font-medium hover:bg-gray-500 disabled:opacity-50"
-                          disabled>
-                          Edit
+                          className="px-3 py-1 rounded bg-yellow-600 text-white text-xs font-medium hover:bg-yellow-700 disabled:opacity-50"
+                          disabled={!!actionLoading}
+                          onClick={() => handleUnverify(pharm._id)}>
+                          {actionLoading === pharm._id
+                            ? "Unverifying..."
+                            : "Unverify"}
                         </button>
                       </td>
                     </tr>
