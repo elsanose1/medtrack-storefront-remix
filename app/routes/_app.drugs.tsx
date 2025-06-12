@@ -4,7 +4,7 @@ import { drugService, Drug } from "~/services/drug.service";
 import type { MetaFunction } from "@remix-run/node";
 
 export const meta: MetaFunction = () => {
-  return [{ title: "Medication Database - MedTrack" }];
+  return [{ title: "Drug Library - MedTrack" }];
 };
 
 interface DrugSearchResponse {
@@ -93,9 +93,7 @@ export default function DrugsPage() {
   return (
     <div className="space-y-6">
       <div className="bg-white rounded-lg shadow-md p-6">
-        <h1 className="text-2xl font-bold text-gray-800 mb-6">
-          Medication Database
-        </h1>
+        <h1 className="text-2xl font-bold text-gray-800 mb-6">Drug Library</h1>
 
         {/* Navigation Tabs */}
         <div className="border-b border-gray-200 mb-6">
@@ -125,7 +123,7 @@ export default function DrugsPage() {
                   ? "border-indigo-500 text-indigo-600"
                   : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
               }`}>
-              Medication Database
+              Drug Library
             </Link>
           </nav>
         </div>

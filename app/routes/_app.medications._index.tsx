@@ -72,7 +72,7 @@ export default function MedicationsPage() {
             Medication Management
           </h1>
           <Link
-            to="/medications/add"
+            to="/drugs"
             className="inline-flex items-center px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-md hover:bg-indigo-700">
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -119,7 +119,7 @@ export default function MedicationsPage() {
                   ? "border-indigo-500 text-indigo-600"
                   : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
               }`}>
-              Medication Database
+              Drug Library
             </Link>
           </nav>
         </div>
@@ -188,7 +188,6 @@ export default function MedicationsPage() {
                   <th scope="col" className="relative py-3.5 pl-3 pr-4 sm:pr-6">
                     <span className="sr-only">Actions</span>
                   </th>
-                  
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 bg-white">

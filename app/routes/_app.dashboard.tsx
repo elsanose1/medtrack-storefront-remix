@@ -273,7 +273,7 @@ export default function Dashboard() {
           {medications.length > 0 && medications.length < 3 && (
             <div className="border border-dashed border-gray-300 rounded-lg p-4 flex flex-col items-center justify-center">
               <Link
-                to="/medications/add"
+                to="/drugs"
                 className="text-indigo-600 hover:text-indigo-800 flex items-center">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -429,9 +429,7 @@ export default function Dashboard() {
               <h3 className="text-sm font-medium text-gray-900">
                 Browse Medications
               </h3>
-              <p className="text-xs text-gray-500">
-                Search the medication database
-              </p>
+              <p className="text-xs text-gray-500">Search the Drug Library</p>
             </div>
           </Link>
         </div>

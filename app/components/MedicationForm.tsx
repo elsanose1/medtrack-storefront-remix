@@ -1,6 +1,36 @@
 import { useState, useEffect } from "react";
 import { drugService } from "~/services/drug.service";
 
+// Medication frequency enum
+enum MedicationFrequency {
+  ONCE = "once",
+  DAILY = "daily",
+  TWICE_DAILY = "twice_daily",
+  THREE_TIMES_DAILY = "three_times_daily",
+  FOUR_TIMES_DAILY = "four_times_daily",
+  WEEKLY = "weekly",
+  MONTHLY = "monthly",
+  AS_NEEDED = "as_needed",
+}
+
+// Human-readable frequency labels
+const frequencyLabels: Record<MedicationFrequency, string> = {
+  [MedicationFrequency.ONCE]: "Once",
+  [MedicationFrequency.DAILY]: "Daily",
+  [MedicationFrequency.TWICE_DAILY]: "Twice Daily",
+  [MedicationFrequency.THREE_TIMES_DAILY]: "Three Times Daily",
+  [MedicationFrequency.FOUR_TIMES_DAILY]: "Four Times Daily",
+  [MedicationFrequency.WEEKLY]: "Weekly",
+  [MedicationFrequency.MONTHLY]: "Monthly",
+  [MedicationFrequency.AS_NEEDED]: "As Needed",
+};
+
+interface Drug {
+  _id: string;
+  brandName: string;
+  genericName?: string;
+}
+
 interface MedicationFormProps {
   initialValues?: {
     brandName: string;
@@ -15,7 +45,7 @@ interface MedicationFormProps {
       daysOfWeek: number[]; // 0 = Sunday, 6 = Saturday
     }[];
   };
-  onSubmit: (values: any) => void;
+  onSubmit: (values: Record<string, unknown>) => void;
   isSubmitting: boolean;
 }
 
@@ -197,50 +227,6 @@ export default function MedicationForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      {/* Drug Search Section */}
-      <div className="space-y-1">
-        <label
-          htmlFor="drugSearch"
-          className="block text-sm font-medium text-gray-700">
-          Search Medication
-        </label>
-        <div className="relative">
-          <input
-            type="text"
-            id="drugSearch"
-            value={drugSearchQuery}
-            onChange={(e) => setDrugSearchQuery(e.target.value)}
-            placeholder="Search for medications..."
-            className="w-full px-4 py-2 border border-gray-300 bg-white text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          />
-          {isSearching && (
-            <div className="absolute right-3 top-2">
-              <div className="animate-spin h-5 w-5 border-t-2 border-indigo-500 rounded-full"></div>
-            </div>
-          )}
-
-          {showSearchResults && searchResults.length > 0 && (
-            <div className="absolute z-10 w-full mt-1 bg-white rounded-md shadow-lg border border-gray-200 max-h-60 overflow-y-auto">
-              <ul className="divide-y divide-gray-100">
-                {searchResults.map((drug) => (
-                  <li
-                    key={drug._id}
-                    className="px-4 py-2 hover:bg-indigo-50 cursor-pointer"
-                    onClick={() => handleDrugSelect(drug)}>
-                    <div className="font-medium">{drug.brandName}</div>
-                    {drug.genericName && (
-                      <div className="text-sm text-gray-500">
-                        {drug.genericName}
-                      </div>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-        </div>
-      </div>
-
       {/* Medication Details */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
@@ -308,36 +294,24 @@ export default function MedicationForm({
             className="block text-sm font-medium text-gray-700 mb-1">
             Frequency*
           </label>
-          <input
-            type="text"
+          <select
             id="frequency"
             name="frequency"
             value={values.frequency}
             onChange={handleChange}
-            placeholder="e.g. Once daily, Twice daily"
             className={`w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
               errors.frequency ? "border-red-500" : "border-gray-300"
-            } bg-white text-gray-900`}
-          />
+            } bg-white text-gray-900`}>
+            <option value="">Select frequency</option>
+            {Object.values(MedicationFrequency).map((frequency) => (
+              <option key={frequency} value={frequency}>
+                {frequencyLabels[frequency as MedicationFrequency]}
+              </option>
+            ))}
+          </select>
           {errors.frequency && (
             <p className="mt-1 text-sm text-red-600">{errors.frequency}</p>
           )}
-        </div>
-
-        <div className="md:col-span-2">
-          <label
-            htmlFor="instructions"
-            className="block text-sm font-medium text-gray-700 mb-1">
-            Instructions
-          </label>
-          <textarea
-            id="instructions"
-            name="instructions"
-            value={values.instructions}
-            onChange={handleChange}
-            rows={3}
-            placeholder="e.g. Take with food"
-            className="w-full px-4 py-2 border border-gray-300 bg-white text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
         </div>
 
         <div>

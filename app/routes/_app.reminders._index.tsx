@@ -88,7 +88,9 @@ export default function RemindersPage() {
         }
 
         // Fetch reminder history
-        const historyResponse = await medicationService.getMedicationReminders("history");
+        const historyResponse = await medicationService.getMedicationReminders(
+          "history"
+        );
         if (historyResponse.success) {
           setReminderHistory(historyResponse.data);
         }
@@ -155,7 +157,7 @@ export default function RemindersPage() {
 
       if (response.success) {
         // Remove the reminder from upcoming reminders
-        setUpcomingReminders((prev) => 
+        setUpcomingReminders((prev) =>
           prev.filter((reminder) => reminder._id !== reminderId)
         );
 
@@ -175,7 +177,9 @@ export default function RemindersPage() {
 
         // Show success message
         toast.success(
-          `Reminder marked as ${status === "completed" ? "completed" : "missed"}`
+          `Reminder marked as ${
+            status === "completed" ? "completed" : "missed"
+          }`
         );
       } else {
         toast.error("Failed to update reminder status");
@@ -214,8 +218,7 @@ export default function RemindersPage() {
                 location.pathname === "/medications"
                   ? "border-indigo-500 text-indigo-600"
                   : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-              }`}
-            >
+              }`}>
               All Medications
             </Link>
             <Link
@@ -224,8 +227,7 @@ export default function RemindersPage() {
                 location.pathname === "/reminders"
                   ? "border-indigo-500 text-indigo-600"
                   : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-              }`}
-            >
+              }`}>
               Reminders
             </Link>
             <Link
@@ -234,9 +236,8 @@ export default function RemindersPage() {
                 location.pathname === "/drugs"
                   ? "border-indigo-500 text-indigo-600"
                   : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-              }`}
-            >
-              Medication Database
+              }`}>
+              Drug Library
             </Link>
           </nav>
         </div>
@@ -256,8 +257,7 @@ export default function RemindersPage() {
                 activeTab === "upcoming"
                   ? "border-indigo-500 text-indigo-600"
                   : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-              }`}
-            >
+              }`}>
               Upcoming Reminders
             </button>
             <button
@@ -266,8 +266,7 @@ export default function RemindersPage() {
                 activeTab === "history"
                   ? "border-indigo-500 text-indigo-600"
                   : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-              }`}
-            >
+              }`}>
               Reminder History
             </button>
           </nav>
@@ -304,8 +303,7 @@ export default function RemindersPage() {
                           .map((reminder) => (
                             <div
                               key={reminder._id}
-                              className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden"
-                            >
+                              className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
                               <div className="p-4">
                                 <div className="text-right text-sm text-gray-500 mb-2">
                                   {new Date(reminder.time).toLocaleTimeString(
@@ -344,8 +342,7 @@ export default function RemindersPage() {
                                           "missed"
                                         )
                                       }
-                                      className="text-xs bg-red-100 hover:bg-red-200 text-red-700 px-2 py-1 rounded"
-                                    >
+                                      className="text-xs bg-red-100 hover:bg-red-200 text-red-700 px-2 py-1 rounded">
                                       Skip
                                     </button>
                                     <button
@@ -356,8 +353,7 @@ export default function RemindersPage() {
                                           "completed"
                                         )
                                       }
-                                      className="text-xs bg-green-100 hover:bg-green-200 text-green-700 px-2 py-1 rounded"
-                                    >
+                                      className="text-xs bg-green-100 hover:bg-green-200 text-green-700 px-2 py-1 rounded">
                                       Done
                                     </button>
                                   </div>
@@ -377,8 +373,7 @@ export default function RemindersPage() {
                   viewBox="0 0 24 24"
                   strokeWidth={1.5}
                   stroke="currentColor"
-                  className="w-12 h-12 mx-auto text-gray-400"
-                >
+                  className="w-12 h-12 mx-auto text-gray-400">
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -394,8 +389,7 @@ export default function RemindersPage() {
                 <div className="mt-6">
                   <Link
                     to="/medications/add"
-                    className="inline-flex items-center px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-md hover:bg-indigo-700"
-                  >
+                    className="inline-flex items-center px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-md hover:bg-indigo-700">
                     Add Medication
                   </Link>
                 </div>
@@ -430,8 +424,7 @@ export default function RemindersPage() {
                           {reminders.map((reminder) => (
                             <li
                               key={reminder._id}
-                              className="px-4 py-3 hover:bg-gray-100"
-                            >
+                              className="px-4 py-3 hover:bg-gray-100">
                               <div className="flex justify-between items-center">
                                 <div className="flex items-center space-x-3">
                                   <span className="text-sm font-medium text-gray-900">
@@ -454,8 +447,7 @@ export default function RemindersPage() {
                                       : reminder.status === "missed"
                                       ? "bg-red-100 text-red-800"
                                       : "bg-yellow-100 text-yellow-800"
-                                  }`}
-                                >
+                                  }`}>
                                   {reminder.status === "completed"
                                     ? "Taken"
                                     : reminder.status === "missed"
@@ -483,8 +475,7 @@ export default function RemindersPage() {
                   viewBox="0 0 24 24"
                   strokeWidth={1.5}
                   stroke="currentColor"
-                  className="w-12 h-12 mx-auto text-gray-400"
-                >
+                  className="w-12 h-12 mx-auto text-gray-400">
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -511,16 +502,14 @@ export default function RemindersPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Link
             to="/medications/add"
-            className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-          >
+            className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
             <div className="flex-shrink-0 bg-indigo-100 p-2 rounded-md">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 className="h-6 w-6 text-indigo-600"
                 fill="none"
                 viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
+                stroke="currentColor">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -540,16 +529,14 @@ export default function RemindersPage() {
           </Link>
           <Link
             to="/medications"
-            className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-          >
+            className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
             <div className="flex-shrink-0 bg-blue-100 p-2 rounded-md">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 className="h-6 w-6 text-blue-600"
                 fill="none"
                 viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
+                stroke="currentColor">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
