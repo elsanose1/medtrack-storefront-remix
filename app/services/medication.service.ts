@@ -23,9 +23,8 @@ export interface Medication {
 export interface MedicationReminder {
   _id: string;
   time: string;
-  status: "active" | "snoozed" | "completed" | "missed";
-  snoozeUntil?: string;
-  notes?: string;
+  status:  "completed" | "missed";
+
 }
 
 export interface MedicationFormData {
@@ -162,15 +161,11 @@ const getUpcomingReminders = async (hours: number = 24) => {
 const updateReminderStatus = async (
   medicationId: string,
   reminderId: string,
-  status: "active" | "snoozed" | "completed" | "missed",
-  snoozeUntil?: Date,
-  notes?: string
+  status: "completed" | "missed",
 ) => {
   try {
     const payload = {
       status,
-      snoozeUntil,
-      notes,
     };
     const response = await api.patch(
       `/medications/${medicationId}/reminders/${reminderId}`,
@@ -213,6 +208,22 @@ const triggerTestReminder = async (
   }
 };
 
+// Get medication reminders (history or upcoming)
+const getMedicationReminders = async (type: "history" | "upcoming") => {
+  try {
+    const response = await api.get(`/medications/reminders/${type}`);
+    return {
+      success: true,
+      data: response.data,
+    };
+  } catch (error: any) {
+    return {
+      success: false,
+      message: error.response?.data?.message || "Failed to fetch reminders",
+    };
+  }
+};
+
 export const medicationService = {
   getPatientMedications,
   getMedicationById,
@@ -222,4 +233,5 @@ export const medicationService = {
   getUpcomingReminders,
   updateReminderStatus,
   triggerTestReminder,
+  getMedicationReminders,
 };
