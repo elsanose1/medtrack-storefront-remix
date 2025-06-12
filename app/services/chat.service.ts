@@ -6,6 +6,8 @@ interface Pharmacy {
   _id: string;
   pharmacyName: string;
   email: string;
+  phone?: string;
+  address?: string;
   isVerified: boolean;
   isOnline?: boolean;
 }
