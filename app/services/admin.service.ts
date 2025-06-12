@@ -49,4 +49,12 @@ export const adminService = {
     });
     return res.data;
   },
+  async approveOrRejectPharmacy(pharmacyId: string, approve: boolean) {
+    const res = await axios.put(
+      `${API_URL}/admin/pharmacies/${pharmacyId}/verify`,
+      { approve },
+      { headers: getAuthHeaders() }
+    );
+    return res.data;
+  },
 };
