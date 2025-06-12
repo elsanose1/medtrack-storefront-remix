@@ -101,9 +101,6 @@ export default function PendingPharmaciesPage() {
                       Phone
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Verified
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Actions
                     </th>
                   </tr>
@@ -119,9 +116,6 @@ export default function PendingPharmaciesPage() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-gray-800">
                         {pharm.phoneNumber || "-"}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-gray-800">
-                        {pharm.verified ? "Yes" : "No"}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-gray-800">
                         <button

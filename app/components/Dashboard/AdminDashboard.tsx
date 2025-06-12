@@ -55,6 +55,8 @@ export default function AdminDashboard({ userInfo }: AdminDashboardProps) {
   const [pendingPharmacies, setPendingPharmacies] = useState<Pharmacy[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [actionMessage, setActionMessage] = useState<string>("");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -100,6 +102,20 @@ export default function AdminDashboard({ userInfo }: AdminDashboardProps) {
     };
     fetchData();
   }, []);
+
+  const handleAction = async (pharmacyId: string, approve: boolean) => {
+    setActionLoading(pharmacyId + approve);
+    setActionMessage("");
+    try {
+      await adminService.approveOrRejectPharmacy(pharmacyId, approve);
+      setPendingPharmacies((prev) => prev.filter((p) => p._id !== pharmacyId));
+      setActionMessage(approve ? "Pharmacy approved." : "Pharmacy rejected.");
+    } catch (err) {
+      setActionMessage("Action failed. Please try again.");
+    } finally {
+      setActionLoading(null);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -313,6 +329,11 @@ export default function AdminDashboard({ userInfo }: AdminDashboardProps) {
             View All
           </Link>
         </div>
+        {actionMessage && (
+          <div className="mb-4 text-center text-sm text-green-700 bg-green-100 rounded p-2">
+            {actionMessage}
+          </div>
+        )}
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
@@ -327,7 +348,7 @@ export default function AdminDashboard({ userInfo }: AdminDashboardProps) {
                   Phone
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Verified
+                  Actions
                 </th>
               </tr>
             </thead>
@@ -344,7 +365,22 @@ export default function AdminDashboard({ userInfo }: AdminDashboardProps) {
                     {pharm.phoneNumber || "-"}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-gray-800">
-                    {pharm.verified ? "Yes" : "No"}
+                    <button
+                      className="mr-2 px-3 py-1 rounded bg-green-600 text-white text-xs font-medium hover:bg-green-700 disabled:opacity-50"
+                      disabled={!!actionLoading}
+                      onClick={() => handleAction(pharm._id, true)}>
+                      {actionLoading === pharm._id + true
+                        ? "Approving..."
+                        : "Approve"}
+                    </button>
+                    <button
+                      className="px-3 py-1 rounded bg-red-600 text-white text-xs font-medium hover:bg-red-700 disabled:opacity-50"
+                      disabled={!!actionLoading}
+                      onClick={() => handleAction(pharm._id, false)}>
+                      {actionLoading === pharm._id + false
+                        ? "Rejecting..."
+                        : "Reject"}
+                    </button>
                   </td>
                 </tr>
               ))}
