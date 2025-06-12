@@ -118,7 +118,7 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
       path: "/pharmacies",
       label: "Pharmacies",
       mobileLabel: "Pharmacy",
-      allowedUserTypes: ["patient", "admin"],
+      allowedUserTypes: ["patient"],
       icon: (
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -138,6 +138,21 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
       path: "/admin/pending-pharmacies",
       label: "Pending Pharmacies",
       mobileLabel: "Pending",
+      allowedUserTypes: ["admin"],
+      icon: (
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="currentColor"
+          className="w-6 h-6 mb-1">
+          <path d="M12 2a10 10 0 100 20 10 10 0 000-20zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" />
+        </svg>
+      ),
+    },
+    {
+      path: "/admin/all-pharmacies",
+      label: "All Pharmacies",
+      mobileLabel: "All Pharm",
       allowedUserTypes: ["admin"],
       icon: (
         <svg

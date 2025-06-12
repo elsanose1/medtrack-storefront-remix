@@ -241,9 +241,16 @@ export default function AdminDashboard({ userInfo }: AdminDashboardProps) {
 
       {/* Pharmacies Table */}
       <div className="bg-white rounded-lg shadow-md p-6">
-        <h2 className="text-xl font-semibold text-gray-800 mb-4">
-          All Pharmacies (Top 3)
-        </h2>
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-semibold text-gray-800">
+            All Pharmacies (Top 3)
+          </h2>
+          <Link
+            to="/admin/all-pharmacies"
+            className="text-indigo-600 hover:text-indigo-800 text-sm font-medium px-4 py-2 border border-indigo-600 rounded-md transition-colors">
+            View All
+          </Link>
+        </div>
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
