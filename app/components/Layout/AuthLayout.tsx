@@ -1,5 +1,5 @@
 import { Link, Outlet, useNavigate, useLocation } from "@remix-run/react";
-import { useEffect, useState, ReactNode } from "react";
+import { useEffect, useState, ReactNode, useRef } from "react";
 import { authService } from "~/services/auth.service";
 import { socketService } from "~/services/socket.service";
 
@@ -21,6 +21,8 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
   const location = useLocation();
   const [username, setUsername] = useState<string>("");
   const [userType, setUserType] = useState<string>("");
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Navigation links configuration
   const navigationLinks: NavLink[] = [
@@ -215,6 +217,18 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
     navigate("/login");
   };
 
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   // Check if a link is active
   const isActive = (path: string) => {
     return (
@@ -262,18 +276,45 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
             </nav>
 
             {/* User Menu */}
-            <div className="flex items-center">
-              <div className="mr-3 hidden md:block">
-                <span className="text-sm text-white">Hello, </span>
-                <span className="text-sm font-medium text-white">
-                  {username}
-                </span>
-              </div>
+            <div className="flex items-center relative" ref={dropdownRef}>
               <button
-                onClick={handleLogout}
-                className="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                Logout
+                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                className="flex items-center justify-center w-10 h-10 rounded-full bg-indigo-600 text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  className="w-6 h-6">
+                  <path
+                    fillRule="evenodd"
+                    d="M7.5 6a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM3.751 20.105a8.25 8.25 0 0116.498 0 .75.75 0 01-.437.695A18.683 18.683 0 0112 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 01-.437-.695z"
+                    clipRule="evenodd"
+                  />
+                </svg>
               </button>
+
+              {/* Dropdown Menu */}
+              {isDropdownOpen && (
+                <div className="absolute right-0 top-10 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50">
+                  <div className="py-1">
+                    <div className="px-4 py-2 text-sm text-gray-700 border-b">
+                      <p className="font-medium">{username}</p>
+                      <p className="text-gray-500 text-xs">{userType}</p>
+                    </div>
+                    <Link
+                      to="/profile"
+                      onClick={() => setIsDropdownOpen(false)}
+                      className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                      Settings
+                    </Link>
+                    <button
+                      onClick={handleLogout}
+                      className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                      Logout
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>

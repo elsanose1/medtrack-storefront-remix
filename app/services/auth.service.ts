@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import { jwtDecode } from "jwt-decode";
 
 export const API_URL = "http://localhost:3000/api";
@@ -36,6 +36,30 @@ interface DecodedToken {
   exp: number;
 }
 
+interface UserProfile {
+  username: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  dateOfBirth?: string;
+  phoneNumber?: string;
+  address?: string;
+  medicalHistory?: string;
+  allergies?: string[];
+  userType: string;
+}
+
+interface ChangePasswordData {
+  currentPassword: string;
+  newPassword: string;
+}
+
+interface ApiResponse<T> {
+  success: boolean;
+  message?: string;
+  data?: T;
+}
+
 const login = async (credentials: LoginCredentials) => {
   try {
     const response = await axios.post(`${API_URL}/auth/login`, credentials);
@@ -48,10 +72,11 @@ const login = async (credentials: LoginCredentials) => {
     }
 
     return { success: false, message: "No token received" };
-  } catch (error: any) {
+  } catch (error) {
+    const axiosError = error as AxiosError<{ message: string }>;
     return {
       success: false,
-      message: error.response?.data?.message || "Login failed",
+      message: axiosError.response?.data?.message || "Login failed",
     };
   }
 };
@@ -60,10 +85,11 @@ const register = async (userData: RegisterData) => {
   try {
     const response = await axios.post(`${API_URL}/auth/register`, userData);
     return { success: true, message: response.data.message };
-  } catch (error: any) {
+  } catch (error) {
+    const axiosError = error as AxiosError<{ message: string }>;
     return {
       success: false,
-      message: error.response?.data?.message || "Registration failed",
+      message: axiosError.response?.data?.message || "Registration failed",
     };
   }
 };
@@ -105,11 +131,69 @@ const getUserInfo = () => {
   }
 };
 
+const changePassword = async (data: ChangePasswordData) => {
+  try {
+    const token = getToken();
+    const response = await axios.post(`${API_URL}/auth/change-password`, data, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return { success: true, message: response.data.message };
+  } catch (error) {
+    const axiosError = error as AxiosError<{ message: string }>;
+    return {
+      success: false,
+      message: axiosError.response?.data?.message || "Failed to change password",
+    };
+  }
+};
+
+const getProfile = async (): Promise<ApiResponse<UserProfile>> => {
+  try {
+    const token = getToken();
+    const response = await axios.get(`${API_URL}/users/profile`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return { success: true, data: response.data };
+  } catch (error) {
+    const axiosError = error as AxiosError<{ message: string }>;
+    return {
+      success: false,
+      message: axiosError.response?.data?.message || "Failed to fetch profile",
+    };
+  }
+};
+
+const updateProfile = async (profileData: Partial<UserProfile>): Promise<ApiResponse<UserProfile>> => {
+  try {
+    const token = getToken();
+    const response = await axios.put(`${API_URL}/users/profile`, profileData, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return { success: true, data: response.data, message: "Profile updated successfully" };
+  } catch (error) {
+    const axiosError = error as AxiosError<{ message: string }>;
+    return {
+      success: false,
+      message: axiosError.response?.data?.message || "Failed to update profile",
+    };
+  }
+};
+
 export const authService = {
+  API_URL,
   login,
   register,
   logout,
   getToken,
   isAuthenticated,
   getUserInfo,
+  changePassword,
+  getProfile,
+  updateProfile,
 };

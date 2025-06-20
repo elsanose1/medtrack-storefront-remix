@@ -426,7 +426,7 @@ export default function AdminDashboard({ userInfo }: AdminDashboardProps) {
               </svg>
             </div>
             <div>
-              <p className="text-sm font-medium">New User Registration</p>
+              <p className="text-sm font-medium text-gray-800">New User Registration</p>
               <p className="text-xs text-gray-500 mt-1">
                 <span className="font-medium">12 new users</span> registered
                 today
@@ -452,7 +452,7 @@ export default function AdminDashboard({ userInfo }: AdminDashboardProps) {
               </svg>
             </div>
             <div>
-              <p className="text-sm font-medium">System Update Complete</p>
+              <p className="text-sm font-medium text-gray-800">System Update Complete</p>
               <p className="text-xs text-gray-500 mt-1">
                 Database migration completed successfully
               </p>
@@ -477,7 +477,7 @@ export default function AdminDashboard({ userInfo }: AdminDashboardProps) {
               </svg>
             </div>
             <div>
-              <p className="text-sm font-medium">Alert: High System Load</p>
+              <p className="text-sm font-medium text-gray-800image.png">Alert: High System Load</p>
               <p className="text-xs text-gray-500 mt-1">
                 Backend server utilization at 82%
               </p>
