@@ -264,6 +264,9 @@ const emitPatientPopupCancel = () => {
 const emitPharmacistPopupResponse = (payload: {
   patientId: string;
   response: string;
+  price: number;
+  drugId: string;
+  note: string;
 }) => {
   const currentSocket = socket || initializeSocket();
   if (!currentSocket) return false;

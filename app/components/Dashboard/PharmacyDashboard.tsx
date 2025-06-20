@@ -42,6 +42,7 @@ export default function PharmacyDashboard({
   const [popupNote, setPopupNote] = useState<string>("");
   const [responseMessage, setResponseMessage] = useState<string>("");
   const [responding, setResponding] = useState(false);
+  const [responsePrice, setResponsePrice] = useState<string>("");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -138,11 +139,20 @@ export default function PharmacyDashboard({
 
   // Respond to patient
   const handleRespond = () => {
-    if (!popupPatientId || !responseMessage.trim()) return;
+    if (
+      !popupPatientId ||
+      !responseMessage.trim() ||
+      !responsePrice.trim() ||
+      isNaN(Number(responsePrice))
+    )
+      return;
     setResponding(true);
     socketService.emitPharmacistPopupResponse({
       patientId: popupPatientId,
       response: responseMessage,
+      price: Number(responsePrice),
+      drugId: popupDrugId,
+      note: popupNote,
     });
     setResponding(false);
     setPopupOpen(false);
@@ -153,6 +163,7 @@ export default function PharmacyDashboard({
     setPopupDrugName("");
     setPopupNote("");
     setResponseMessage("");
+    setResponsePrice("");
   };
 
   if (isLoading) {
@@ -244,10 +255,33 @@ export default function PharmacyDashboard({
                 disabled={responding}
               />
             </div>
+            <div className="mb-4">
+              <label
+                htmlFor="pharmacist-price"
+                className="block text-sm font-medium text-gray-700 mb-1">
+                Price:
+              </label>
+              <input
+                id="pharmacist-price"
+                type="number"
+                min="0"
+                step="0.01"
+                className="border border-indigo-300 rounded px-3 py-2 text-sm w-full"
+                placeholder="Enter price"
+                value={responsePrice}
+                onChange={(e) => setResponsePrice(e.target.value)}
+                disabled={responding}
+              />
+            </div>
             <button
               onClick={handleRespond}
               className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 text-sm w-full"
-              disabled={responding || !responseMessage.trim()}>
+              disabled={
+                responding ||
+                !responseMessage.trim() ||
+                !responsePrice.trim() ||
+                isNaN(Number(responsePrice))
+              }>
               {responding ? "Sending..." : "Send Response"}
             </button>
           </div>
