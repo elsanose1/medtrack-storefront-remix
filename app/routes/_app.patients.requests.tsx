@@ -9,6 +9,7 @@ interface ApprovedDrugRequest {
   price: number;
   status: "preparing" | "out_for_delivery" | "delivered" | "canceled";
   createdAt: string;
+  pharmacyName?: string;
 }
 
 export default function PatientDrugRequestsPage() {
@@ -80,6 +81,9 @@ export default function PatientDrugRequestsPage() {
                     Drug
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                    Pharmacy
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                     Note
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
@@ -101,6 +105,9 @@ export default function PatientDrugRequestsPage() {
                   <tr key={req._id} className="text-center">
                     <td className="px-6 py-4 whitespace-nowrap text-gray-800">
                       {req.drugID}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-gray-800">
+                      {req.pharmacyName || "-"}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-gray-800">
                       {req.note || "-"}
