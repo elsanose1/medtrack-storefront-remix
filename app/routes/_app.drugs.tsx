@@ -193,83 +193,8 @@ export default function DrugsPage() {
         )}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Search Results */}
-          <div className="lg:col-span-1">
-            <h2 className="text-lg font-medium text-gray-900 mb-3">
-              Search Results
-            </h2>
-            {searchResults.length > 0 ? (
-              <div className="bg-gray-50 rounded-lg overflow-hidden border border-gray-200">
-                <ul className="divide-y divide-gray-200">
-                  {searchResults.map((drug) => (
-                    <li key={drug.id}>
-                      <button
-                        onClick={() => handleDrugSelect(drug.id)}
-                        className={`w-full px-4 py-3 text-left hover:bg-gray-100 transition-colors ${
-                          selectedDrug?.id === drug.id ? "bg-indigo-50" : ""
-                        }`}>
-                        <div className="font-medium text-gray-900">
-                          {drug.brandName}
-                        </div>
-                        {drug.genericName && (
-                          <div className="text-sm text-gray-500">
-                            {drug.genericName}
-                          </div>
-                        )}
-                        <div className="mt-1 flex flex-wrap gap-1">
-                          {drug.route && drug.route.length > 0 && (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
-                              {drug.route[0]}
-                            </span>
-                          )}
-                          {drug.dosage && drug.dosage.length > 0 && (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
-                              {drug.dosage[0]}
-                            </span>
-                          )}
-                        </div>
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ) : (
-              <div className="text-center py-8 bg-gray-50 rounded-lg border border-gray-200">
-                {isLoading ? (
-                  <div className="animate-pulse">
-                    <div className="rounded-full bg-gray-200 h-10 w-10 mx-auto"></div>
-                    <div className="mt-4 h-4 bg-gray-200 rounded w-3/4 mx-auto"></div>
-                    <div className="mt-2 h-4 bg-gray-200 rounded w-1/2 mx-auto"></div>
-                  </div>
-                ) : (
-                  <>
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      strokeWidth={1.5}
-                      stroke="currentColor"
-                      className="w-10 h-10 mx-auto text-gray-400">
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
-                      />
-                    </svg>
-                    <h3 className="mt-2 text-sm font-medium text-gray-900">
-                      No medications found
-                    </h3>
-                    <p className="mt-1 text-sm text-gray-500">
-                      Try searching for a medication name
-                    </p>
-                  </>
-                )}
-              </div>
-            )}
-          </div>
-
-          {/* Drug Details */}
-          <div className="lg:col-span-2" ref={detailsRef}>
+             {/* Drug Details */}
+             <div className="lg:col-span-2" ref={detailsRef}>
             <h2 className="text-lg font-medium text-gray-900 mb-3">
               Medication Details
             </h2>
@@ -413,6 +338,82 @@ export default function DrugsPage() {
               </div>
             )}
           </div>
+          {/* Search Results */}
+          <div className="lg:col-span-1">
+            <h2 className="text-lg font-medium text-gray-900 mb-3">
+              Search Results
+            </h2>
+            {searchResults.length > 0 ? (
+              <div className="bg-gray-50 rounded-lg overflow-hidden border border-gray-200">
+                <ul className="divide-y divide-gray-200">
+                  {searchResults.map((drug) => (
+                    <li key={drug.id}>
+                      <button
+                        onClick={() => handleDrugSelect(drug.id)}
+                        className={`w-full px-4 py-3 text-left hover:bg-gray-100 transition-colors ${
+                          selectedDrug?.id === drug.id ? "bg-indigo-50" : ""
+                        }`}>
+                        <div className="font-medium text-gray-900">
+                          {drug.brandName}
+                        </div>
+                        {drug.genericName && (
+                          <div className="text-sm text-gray-500">
+                            {drug.genericName}
+                          </div>
+                        )}
+                        <div className="mt-1 flex flex-wrap gap-1">
+                          {drug.route && drug.route.length > 0 && (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                              {drug.route[0]}
+                            </span>
+                          )}
+                          {drug.dosage && drug.dosage.length > 0 && (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+                              {drug.dosage[0]}
+                            </span>
+                          )}
+                        </div>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : (
+              <div className="text-center py-8 bg-gray-50 rounded-lg border border-gray-200">
+                {isLoading ? (
+                  <div className="animate-pulse">
+                    <div className="rounded-full bg-gray-200 h-10 w-10 mx-auto"></div>
+                    <div className="mt-4 h-4 bg-gray-200 rounded w-3/4 mx-auto"></div>
+                    <div className="mt-2 h-4 bg-gray-200 rounded w-1/2 mx-auto"></div>
+                  </div>
+                ) : (
+                  <>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      strokeWidth={1.5}
+                      stroke="currentColor"
+                      className="w-10 h-10 mx-auto text-gray-400">
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
+                      />
+                    </svg>
+                    <h3 className="mt-2 text-sm font-medium text-gray-900">
+                      No medications found
+                    </h3>
+                    <p className="mt-1 text-sm text-gray-500">
+                      Try searching for a medication name
+                    </p>
+                  </>
+                )}
+              </div>
+            )}
+          </div>
+
+       
         </div>
       </div>
 

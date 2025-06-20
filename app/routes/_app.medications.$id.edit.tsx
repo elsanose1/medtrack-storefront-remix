@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "@remix-run/react";
+import { useParams, useNavigate, Outlet } from "@remix-run/react";
 import {
   medicationService,
   Medication,
@@ -159,6 +159,7 @@ export default function EditMedicationPage() {
   }
 
   return (
+  
     <div className="space-y-6">
       <div className="bg-white rounded-lg shadow-md p-6">
         <h1 className="text-2xl font-bold text-gray-800 mb-6">
@@ -178,5 +179,6 @@ export default function EditMedicationPage() {
         />
       </div>
     </div>
+    
   );
 }
