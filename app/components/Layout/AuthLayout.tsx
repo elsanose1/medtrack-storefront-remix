@@ -2,6 +2,7 @@ import { Link, Outlet, useNavigate, useLocation } from "@remix-run/react";
 import { useEffect, useState, ReactNode, useRef } from "react";
 import { authService } from "~/services/auth.service";
 import { socketService } from "~/services/socket.service";
+import PatientPharmacistAttentionPopup from "../PatientPharmacistAttentionPopup";
 
 interface AuthLayoutProps {
   children?: ReactNode;
@@ -327,6 +328,9 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
       <main className="container mx-auto px-4 py-6 ">
         {children || <Outlet />}
       </main>
+
+      {/* Global Pharmacist Attention Popup for Patients */}
+      {userType === "patient" && <PatientPharmacistAttentionPopup />}
 
       {/* Mobile Bottom Navigation Bar - limit to 5 items */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white shadow-lg border-t border-gray-200 z-50">
