@@ -9,6 +9,17 @@ export const meta: MetaFunction = () => {
   return [{ title: "Drug Library - MedTrack" }];
 };
 
+interface UserInfo {
+  id: string;
+  _id: string;
+  email: string;
+  username: string;
+  userType: "patient" | "pharmacy" | "admin";
+  firstName: string;
+  lastName: string;
+  exp: number;
+}
+
 interface DrugSearchResponse {
   success: boolean;
   data?: {
@@ -39,6 +50,17 @@ export default function DrugsPage() {
   const [popupSent, setPopupSent] = useState(false);
   const [popupError, setPopupError] = useState("");
   const [popupResponse, setPopupResponse] = useState<string | null>(null);
+  const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
+
+  useEffect(() => {
+    const user = authService.getUserInfo();
+    if (user) {
+      setUserInfo({
+        ...user,
+        userType: user.userType as UserInfo["userType"],
+      });
+    }
+  }, []);
 
   // Listen for pharmacist popup response
   useEffect(() => {
@@ -355,13 +377,15 @@ export default function DrugsPage() {
                 </div>
 
                 {/* Request Drug Button */}
-                <div className="mt-4 mb-4">
-                  <button
-                    className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm"
-                    onClick={handleOpenPopup}>
-                    Request Drug
-                  </button>
-                </div>
+                {userInfo && userInfo.userType === "patient" && (
+                  <div className="mt-4 mb-4">
+                    <button
+                      className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm"
+                      onClick={handleOpenPopup}>
+                      Request Drug
+                    </button>
+                  </div>
+                )}
                 {/* Popup Modal */}
                 {popupOpen && (
                   <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
@@ -443,13 +467,15 @@ export default function DrugsPage() {
                   </div>
                 )}
 
-                <div className="mt-8">
-                  <Link
-                    to={`/medications/add?prefill=${selectedDrug.id}`}
-                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                    Add This Medication to My List
-                  </Link>
-                </div>
+                {userInfo && userInfo.userType === "patient" && (
+                  <div className="mt-8">
+                    <Link
+                      to={`/medications/add?prefill=${selectedDrug.id}`}
+                      className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                      Add This Medication to My List
+                    </Link>
+                  </div>
+                )}
               </div>
             ) : (
               <div className="text-center py-12 bg-gray-50 rounded-lg border border-gray-200">
