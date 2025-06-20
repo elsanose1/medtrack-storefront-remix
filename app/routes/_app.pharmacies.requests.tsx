@@ -85,73 +85,127 @@ export default function PharmacyDrugRequestsPage() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-6">Pharmacy Drug Requests</h1>
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold text-gray-800">
+          Pharmacy Drug Requests
+        </h1>
+      </div>
       {loading ? (
-        <div>Loading...</div>
+        <div className="flex justify-center items-center h-64">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500 mx-auto"></div>
+            <p className="mt-4 text-gray-600">Loading...</p>
+          </div>
+        </div>
       ) : error ? (
-        <div className="text-red-600">{error}</div>
+        <div className="bg-red-50 text-red-600 p-4 rounded-md mb-4">
+          {error}
+        </div>
       ) : (
-        <div className="overflow-x-auto">
-          <table className="min-w-full bg-white border border-gray-200 rounded-lg">
-            <thead>
-              <tr>
-                <th className="px-4 py-2 border-b">Drug</th>
-                <th className="px-4 py-2 border-b">Patient</th>
-                <th className="px-4 py-2 border-b">Note</th>
-                <th className="px-4 py-2 border-b">Price</th>
-                <th className="px-4 py-2 border-b">Status</th>
-                <th className="px-4 py-2 border-b">Created At</th>
-                <th className="px-4 py-2 border-b">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {requests.map((req) => (
-                <tr key={req._id} className="text-center">
-                  <td className="px-4 py-2 border-b">{req.drugID}</td>
-                  <td className="px-4 py-2 border-b">{req.patientID}</td>
-                  <td className="px-4 py-2 border-b">{req.note || "-"}</td>
-                  <td className="px-4 py-2 border-b">
-                    ${req.price.toFixed(2)}
-                  </td>
-                  <td className="px-4 py-2 border-b">{req.status}</td>
-                  <td className="px-4 py-2 border-b">
-                    {new Date(req.createdAt).toLocaleString()}
-                  </td>
-                  <td className="px-4 py-2 border-b space-x-2">
-                    {(req.status === "preparing" ||
-                      req.status === "out_for_delivery") && (
-                      <button
-                        className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 text-sm"
-                        onClick={() => handleCancel(req._id)}
-                        disabled={actionId === req._id}>
-                        {actionId === req._id ? "Canceling..." : "Cancel"}
-                      </button>
-                    )}
-                    {req.status === "preparing" && (
-                      <button
-                        className="px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600 text-sm"
-                        onClick={() => handleOutForDelivery(req._id)}
-                        disabled={actionId === req._id}>
-                        {actionId === req._id
-                          ? "Updating..."
-                          : "Out for Delivery"}
-                      </button>
-                    )}
-                    {req.status === "out_for_delivery" && (
-                      <button
-                        className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 text-sm"
-                        onClick={() => handleDelivered(req._id)}
-                        disabled={actionId === req._id}>
-                        {actionId === req._id
-                          ? "Updating..."
-                          : "Mark Delivered"}
-                      </button>
-                    )}
-                  </td>
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                    Drug
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                    Patient
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                    Note
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                    Price
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                    Status
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                    Created At
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                    Actions
+                  </th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {requests.map((req) => (
+                  <tr key={req._id} className="text-center">
+                    <td className="px-6 py-4 whitespace-nowrap text-gray-800">
+                      {req.drugID}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-gray-800">
+                      {req.patientID}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-gray-800">
+                      {req.note || "-"}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-gray-800">
+                      ${req.price.toFixed(2)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-gray-800">
+                      {req.status === "preparing" && (
+                        <span className="bg-yellow-100 text-yellow-800 rounded px-2 py-1 text-xs font-semibold">
+                          Preparing
+                        </span>
+                      )}
+                      {req.status === "out_for_delivery" && (
+                        <span className="bg-blue-100 text-blue-800 rounded px-2 py-1 text-xs font-semibold">
+                          Out for Delivery
+                        </span>
+                      )}
+                      {req.status === "delivered" && (
+                        <span className="bg-green-100 text-green-800 rounded px-2 py-1 text-xs font-semibold">
+                          Delivered
+                        </span>
+                      )}
+                      {req.status === "canceled" && (
+                        <span className="bg-red-100 text-red-800 rounded px-2 py-1 text-xs font-semibold">
+                          Canceled
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-gray-800">
+                      {new Date(req.createdAt).toLocaleString()}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-gray-800 space-x-2">
+                      {(req.status === "preparing" ||
+                        req.status === "out_for_delivery") && (
+                        <button
+                          className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 text-xs font-medium"
+                          onClick={() => handleCancel(req._id)}
+                          disabled={actionId === req._id}>
+                          {actionId === req._id ? "Canceling..." : "Cancel"}
+                        </button>
+                      )}
+                      {req.status === "preparing" && (
+                        <button
+                          className="px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600 text-xs font-medium"
+                          onClick={() => handleOutForDelivery(req._id)}
+                          disabled={actionId === req._id}>
+                          {actionId === req._id
+                            ? "Updating..."
+                            : "Out for Delivery"}
+                        </button>
+                      )}
+                      {req.status === "out_for_delivery" && (
+                        <button
+                          className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 text-xs font-medium"
+                          onClick={() => handleDelivered(req._id)}
+                          disabled={actionId === req._id}>
+                          {actionId === req._id
+                            ? "Updating..."
+                            : "Mark Delivered"}
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
     </div>
