@@ -18,6 +18,7 @@ export default function PharmacyDrugRequestsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [actionId, setActionId] = useState<string | null>(null);
+  const [statusFilter, setStatusFilter] = useState("all");
 
   useEffect(() => {
     const fetchRequests = async () => {
@@ -84,6 +85,10 @@ export default function PharmacyDrugRequestsPage() {
     setActionId(null);
   };
 
+  const filteredRequests = requests.filter(
+    (req) => statusFilter === "all" || req.status === statusFilter
+  );
+
   console.log(requests);
 
   return (
@@ -92,6 +97,25 @@ export default function PharmacyDrugRequestsPage() {
         <h1 className="text-2xl font-bold text-gray-800">
           Pharmacy Drug Requests
         </h1>
+        <div>
+          <label
+            htmlFor="status"
+            className="block text-sm font-medium text-gray-700">
+            Filter by Status
+          </label>
+          <select
+            id="status"
+            name="status"
+            className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}>
+            <option value="all">All</option>
+            <option value="preparing">Preparing</option>
+            <option value="out_for_delivery">Out for Delivery</option>
+            <option value="delivered">Delivered</option>
+            <option value="canceled">Canceled</option>
+          </select>
+        </div>
       </div>
       {loading ? (
         <div className="flex justify-center items-center h-64">
@@ -134,7 +158,7 @@ export default function PharmacyDrugRequestsPage() {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {requests.map((req) => (
+                {filteredRequests.map((req) => (
                   <tr key={req._id} className="text-center">
                     <td className="px-6 py-4 whitespace-nowrap text-gray-800">
                       {req.drugName}
