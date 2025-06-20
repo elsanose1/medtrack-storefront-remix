@@ -4,7 +4,7 @@ import { authService } from "~/services/auth.service";
 
 interface ApprovedDrugRequest {
   _id: string;
-  drugID: string;
+  drugName: string;
   note?: string;
   price: number;
   status: "preparing" | "out_for_delivery" | "delivered" | "canceled";
@@ -55,6 +55,8 @@ export default function PatientDrugRequestsPage() {
     setCancelingId(null);
   };
 
+  console.log({ requests });
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
@@ -104,7 +106,7 @@ export default function PatientDrugRequestsPage() {
                 {requests.map((req) => (
                   <tr key={req._id} className="text-center">
                     <td className="px-6 py-4 whitespace-nowrap text-gray-800">
-                      {req.drugID}
+                      {req.drugName}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-gray-800">
                       {req.pharmacyName || "-"}

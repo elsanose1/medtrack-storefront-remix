@@ -4,7 +4,7 @@ import { authService } from "~/services/auth.service";
 
 interface ApprovedDrugRequest {
   _id: string;
-  drugID: string;
+  drugName: string;
   patientID: string;
   note?: string;
   price: number;
@@ -137,7 +137,7 @@ export default function PharmacyDrugRequestsPage() {
                 {requests.map((req) => (
                   <tr key={req._id} className="text-center">
                     <td className="px-6 py-4 whitespace-nowrap text-gray-800">
-                      {req.drugID}
+                      {req.drugName}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-gray-800">
                       {req.patientName || req.patientID}
