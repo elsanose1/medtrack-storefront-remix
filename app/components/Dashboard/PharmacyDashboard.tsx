@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Link } from "@remix-run/react";
 import { socketService } from "~/services/socket.service";
 import { requestService } from "~/services/request.service";
+import { drugService } from "~/services/drug.service";
 
 interface UserInfo {
   id: string;
@@ -10,6 +11,17 @@ interface UserInfo {
   userType: string;
   firstName: string;
   lastName: string;
+}
+
+interface ApprovedDrugRequest {
+  _id: string;
+  drugName: string;
+  patientID: string;
+  note?: string;
+  price: number;
+  status: "preparing" | "out_for_delivery" | "delivered" | "canceled";
+  createdAt: string;
+  patientName?: string;
 }
 
 interface Patient {
@@ -30,6 +42,9 @@ export default function PharmacyDashboard({
   userInfo,
 }: PharmacyDashboardProps) {
   const [recentPatients, setRecentPatients] = useState<Patient[]>([]);
+  const [deliveredRequests, setDeliveredRequests] = useState<
+    ApprovedDrugRequest[]
+  >([]);
   const [preparingCount, setPreparingCount] = useState<number>(0);
   const [outForDeliveryCount, setOutForDeliveryCount] = useState<number>(0);
   const [isLoading, setIsLoading] = useState(true);
@@ -53,13 +68,30 @@ export default function PharmacyDashboard({
 
       try {
         if (userInfo) {
-          const approvedRequests =
-            await requestService.getApprovedRequestCounts(userInfo.id);
+          const approvedRequestsPromise =
+            requestService.getApprovedRequestCounts(userInfo.id);
+          const pharmacyRequestsPromise =
+            drugService.getPharmacyApprovedDrugRequests(userInfo.id);
+
+          const [approvedRequests, pharmacyRequests] = await Promise.all([
+            approvedRequestsPromise,
+            pharmacyRequestsPromise,
+          ]);
+
           if (approvedRequests.success) {
             setPreparingCount(approvedRequests.data.preparing);
             setOutForDeliveryCount(approvedRequests.data.out_for_delivery);
           } else {
             setError(approvedRequests.message);
+          }
+
+          if (pharmacyRequests.success) {
+            const delivered = pharmacyRequests.data.filter(
+              (req: ApprovedDrugRequest) => req.status === "delivered"
+            );
+            setDeliveredRequests(delivered);
+          } else {
+            setError(pharmacyRequests.message || "Failed to fetch requests");
           }
         }
         // Simulated data - would be replaced with actual API calls
@@ -403,29 +435,27 @@ export default function PharmacyDashboard({
         </div>
       </div>
 
-      {/* Recent Patients */}
+      {/* Delivered Requests */}
       <div className="bg-white rounded-lg shadow-md p-6">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-semibold text-gray-800">
-            Recent Patients
+            Delivered Requests
           </h2>
           <Link
-            to="/patients"
+            to="/pharmacies/requests"
             className="text-indigo-600 hover:text-indigo-800 text-sm font-medium">
             View All
           </Link>
         </div>
-
-        {error && (
-          <div className="bg-red-50 text-red-600 p-4 rounded-md mb-4">
-            {error}
-          </div>
-        )}
-
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Drug
+                </th>
                 <th
                   scope="col"
                   className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -434,142 +464,42 @@ export default function PharmacyDashboard({
                 <th
                   scope="col"
                   className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Contact
+                  Price
                 </th>
                 <th
                   scope="col"
                   className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Medications
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Last Active
-                </th>
-                <th scope="col" className="relative px-6 py-3">
-                  <span className="sr-only">Actions</span>
+                  Date
                 </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {recentPatients.map((patient) => (
-                <tr key={patient._id}>
+              {deliveredRequests.map((req) => (
+                <tr key={req._id}>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900">
-                      {patient.firstName} {patient.lastName}
+                      {req.drugName}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-500">{patient.email}</div>
                     <div className="text-sm text-gray-500">
-                      {patient.phoneNumber}
+                      {req.patientName || req.patientID}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm text-gray-900">
-                      {patient.medications}
+                      ${req.price.toFixed(2)}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm text-gray-500">
-                      {patient.lastActive?.toLocaleDateString()}
+                      {new Date(req.createdAt).toLocaleDateString()}
                     </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <Link
-                      to={`/patients/${patient._id}`}
-                      className="text-indigo-600 hover:text-indigo-900">
-                      View
-                    </Link>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
-        </div>
-      </div>
-
-      {/* Quick Actions */}
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <h2 className="text-lg font-semibold text-gray-800 mb-4">
-          Quick Actions
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Link
-            to="/patients/add"
-            className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
-            <div className="flex-shrink-0 bg-indigo-100 p-2 rounded-md">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-6 w-6 text-indigo-600"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"
-                />
-              </svg>
-            </div>
-            <div className="ml-4">
-              <h3 className="text-sm font-medium text-gray-900">Add Patient</h3>
-              <p className="text-xs text-gray-500">Register a new patient</p>
-            </div>
-          </Link>
-
-          <Link
-            to="/drugs"
-            className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
-            <div className="flex-shrink-0 bg-blue-100 p-2 rounded-md">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-6 w-6 text-blue-600"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2"
-                />
-              </svg>
-            </div>
-            <div className="ml-4">
-              <h3 className="text-sm font-medium text-gray-900">
-                Browse Medications
-              </h3>
-              <p className="text-xs text-gray-500">Search the drug library</p>
-            </div>
-          </Link>
-
-          <Link
-            to="/refills"
-            className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
-            <div className="flex-shrink-0 bg-green-100 p-2 rounded-md">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-6 w-6 text-green-600"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                />
-              </svg>
-            </div>
-            <div className="ml-4">
-              <h3 className="text-sm font-medium text-gray-900">
-                Manage Refills
-              </h3>
-              <p className="text-xs text-gray-500">Process pending requests</p>
-            </div>
-          </Link>
         </div>
       </div>
     </div>
