@@ -354,12 +354,12 @@ export default function DrugsPage() {
                   </div>
                 </div>
 
-                {/* Request Pharmacist Attention Button */}
+                {/* Request Drug Button */}
                 <div className="mt-4 mb-4">
                   <button
                     className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm"
                     onClick={handleOpenPopup}>
-                    Request Pharmacist Attention
+                    Request Drug
                   </button>
                 </div>
                 {/* Popup Modal */}
@@ -398,7 +398,7 @@ export default function DrugsPage() {
                             d="M13 16h-1v-4h-1m1-4h.01M12 20a8 8 0 100-16 8 8 0 000 16z"
                           />
                         </svg>
-                        Request Pharmacist Attention
+                        Request Drug
                       </h2>
                       {popupResponse && (
                         <div className="bg-green-100 text-green-800 rounded p-3 mb-2">
@@ -414,7 +414,8 @@ export default function DrugsPage() {
                           <label
                             htmlFor="popup-note"
                             className="block text-sm font-medium text-gray-700 mb-1">
-                            Note for Pharmacist:
+                            Note for Pharmacist{" "}
+                            <span className="text-red-500">*</span>:
                           </label>
                           <textarea
                             id="popup-note"
@@ -434,7 +435,7 @@ export default function DrugsPage() {
                             onClick={handleSendPopupRequest}
                             className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm w-full"
                             disabled={popupLoading || !popupNote.trim()}>
-                            {popupLoading ? "Sending..." : "Send Request"}
+                            {popupLoading ? "Sending..." : "Request Drug"}
                           </button>
                         </>
                       ) : null}
