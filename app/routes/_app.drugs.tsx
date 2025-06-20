@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Link, useLocation } from "@remix-run/react";
 import { drugService, Drug } from "~/services/drug.service";
 import { socketService } from "~/services/socket.service";
@@ -38,6 +38,19 @@ export default function DrugsPage() {
   const [popupLoading, setPopupLoading] = useState(false);
   const [popupSent, setPopupSent] = useState(false);
   const [popupError, setPopupError] = useState("");
+  const [popupResponse, setPopupResponse] = useState<string | null>(null);
+
+  // Listen for pharmacist popup response
+  useEffect(() => {
+    const handlePopupResponse = (data: { response: string }) => {
+      setPopupResponse(data.response);
+      setPopupOpen(true); // Open the modal if not already open
+    };
+    socketService.setupPopupResponseListener(handlePopupResponse);
+    return () => {
+      socketService.removePopupResponseListener();
+    };
+  }, []);
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) return;
@@ -116,12 +129,14 @@ export default function DrugsPage() {
     setPopupNote("");
     setPopupSent(false);
     setPopupError("");
+    setPopupResponse(null);
   };
   const handleClosePopup = () => {
     setPopupOpen(false);
     setPopupNote("");
     setPopupSent(false);
     setPopupError("");
+    setPopupResponse(null);
   };
   const handleSendPopupRequest = () => {
     if (!selectedDrug || !popupNote.trim()) {
@@ -385,11 +400,16 @@ export default function DrugsPage() {
                         </svg>
                         Request Pharmacist Attention
                       </h2>
-                      {popupSent ? (
+                      {popupResponse && (
+                        <div className="bg-green-100 text-green-800 rounded p-3 mb-2">
+                          Pharmacist Response: {popupResponse}
+                        </div>
+                      )}
+                      {popupSent && !popupResponse ? (
                         <div className="bg-green-100 text-green-800 rounded p-3 mb-2">
                           Request sent! A pharmacist will be notified.
                         </div>
-                      ) : (
+                      ) : !popupSent && !popupResponse ? (
                         <>
                           <label
                             htmlFor="popup-note"
@@ -417,7 +437,7 @@ export default function DrugsPage() {
                             {popupLoading ? "Sending..." : "Send Request"}
                           </button>
                         </>
-                      )}
+                      ) : null}
                     </div>
                   </div>
                 )}
