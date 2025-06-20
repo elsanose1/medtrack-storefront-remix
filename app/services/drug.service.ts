@@ -60,10 +60,12 @@ const getAllDrugs = async (limit: number = 10, skip: number = 0) => {
       success: true,
       data: response.data as DrugSearchResult,
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     return {
       success: false,
-      message: error.response?.data?.message || "Failed to fetch drugs",
+      message:
+        (error as { response?: { data?: { message?: string } } }).response?.data
+          ?.message || "Failed to fetch drugs",
     };
   }
 };
@@ -78,10 +80,12 @@ const searchDrugsByBrandName = async (brandName: string) => {
       success: true,
       data: response.data as DrugSearchResult,
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     return {
       success: false,
-      message: error.response?.data?.message || "Failed to search drugs",
+      message:
+        (error as { response?: { data?: { message?: string } } }).response?.data
+          ?.message || "Failed to search drugs",
     };
   }
 };
@@ -94,10 +98,119 @@ const getDrugById = async (drugId: string) => {
       success: true,
       data: response.data as Drug,
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     return {
       success: false,
-      message: error.response?.data?.message || "Failed to fetch drug details",
+      message:
+        (error as { response?: { data?: { message?: string } } }).response?.data
+          ?.message || "Failed to fetch drug details",
+    };
+  }
+};
+
+// Approved Drug Requests
+const getPatientApprovedDrugRequests = async (patientID: string) => {
+  try {
+    const response = await api.get(
+      `/approved-drug-requests/patient/${patientID}`
+    );
+    return { success: true, data: response.data };
+  } catch (error: unknown) {
+    return {
+      success: false,
+      message:
+        (error as { response?: { data?: { message?: string } } }).response?.data
+          ?.message || "Failed to fetch patient requests",
+    };
+  }
+};
+
+const getPharmacyApprovedDrugRequests = async (pharmacyID: string) => {
+  try {
+    const response = await api.get(
+      `/approved-drug-requests/pharmacy/${pharmacyID}`
+    );
+    return { success: true, data: response.data };
+  } catch (error: unknown) {
+    return {
+      success: false,
+      message:
+        (error as { response?: { data?: { message?: string } } }).response?.data
+          ?.message || "Failed to fetch pharmacy requests",
+    };
+  }
+};
+
+const cancelPatientApprovedDrugRequest = async (
+  id: string,
+  patientID: string
+) => {
+  try {
+    const response = await api.patch(
+      `/approved-drug-requests/cancel/patient/${id}`,
+      { patientID }
+    );
+    return { success: true, data: response.data };
+  } catch (error: unknown) {
+    return {
+      success: false,
+      message:
+        (error as { response?: { data?: { message?: string } } }).response?.data
+          ?.message || "Failed to cancel request",
+    };
+  }
+};
+
+const cancelPharmacyApprovedDrugRequest = async (
+  id: string,
+  pharmacyID: string
+) => {
+  try {
+    const response = await api.patch(
+      `/approved-drug-requests/cancel/pharmacy/${id}`,
+      { pharmacyID }
+    );
+    return { success: true, data: response.data };
+  } catch (error: unknown) {
+    return {
+      success: false,
+      message:
+        (error as { response?: { data?: { message?: string } } }).response?.data
+          ?.message || "Failed to cancel request",
+    };
+  }
+};
+
+const markOutForDelivery = async (id: string, pharmacyID: string) => {
+  try {
+    const response = await api.patch(
+      `/approved-drug-requests/out-for-delivery/${id}`,
+      { pharmacyID }
+    );
+    return { success: true, data: response.data };
+  } catch (error: unknown) {
+    return {
+      success: false,
+      message:
+        (error as { response?: { data?: { message?: string } } }).response?.data
+          ?.message || "Failed to update status",
+    };
+  }
+};
+
+const markDelivered = async (id: string, pharmacyID: string) => {
+  try {
+    const response = await api.patch(
+      `/approved-drug-requests/delivered/${id}`,
+      { pharmacyID }
+    );
+    return { success: true, data: response.data };
+  } catch (error: unknown) {
+    return {
+      success: false,
+      message:
+        (error as { response?: { data?: { message?: string } } }).response?.data
+          ?.message || "Failed to update status",
     };
   }
 };
@@ -106,4 +219,10 @@ export const drugService = {
   getAllDrugs,
   searchDrugsByBrandName,
   getDrugById,
+  getPatientApprovedDrugRequests,
+  getPharmacyApprovedDrugRequests,
+  cancelPatientApprovedDrugRequest,
+  cancelPharmacyApprovedDrugRequest,
+  markOutForDelivery,
+  markDelivered,
 };
