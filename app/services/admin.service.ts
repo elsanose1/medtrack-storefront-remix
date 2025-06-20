@@ -65,4 +65,24 @@ export const adminService = {
     );
     return res.data;
   },
+  async getAllPatients() {
+    const res = await axios.get(`${API_URL}/admin/patients`, {
+      headers: getAuthHeaders(),
+    });
+    return res.data;
+  },
+  async createAdmin(adminData: {
+    username: string;
+    email: string;
+    password: string;
+    firstName?: string;
+    lastName?: string;
+    phoneNumber?: string;
+    address?: string;
+  }) {
+    const res = await axios.post(`${API_URL}/admin/admins`, adminData, {
+      headers: getAuthHeaders(),
+    });
+    return res.data;
+  },
 };

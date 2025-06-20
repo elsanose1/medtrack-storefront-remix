@@ -201,7 +201,9 @@ export default function MedicationsPage() {
                         {medication.genericName}
                       </div>
                     </td>
-                    <td className="px-3 py-4 text-sm text-gray-500 max-w-xs truncate" title={medication.dosage}>
+                    <td
+                      className="px-3 py-4 text-sm text-gray-500 max-w-xs truncate"
+                      title={medication.dosage}>
                       {medication.dosage}
                     </td>
                     <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
@@ -224,11 +226,7 @@ export default function MedicationsPage() {
                           className="text-indigo-600 hover:text-indigo-900">
                           View
                         </Link>
-                        <Link
-                          to={`/medications/${medication._id}/edit`}
-                          className="text-blue-600 hover:text-blue-900">
-                          Edit
-                        </Link>
+
                         <button
                           onClick={() => handleDeleteMedication(medication._id)}
                           className="text-red-600 hover:text-red-900">

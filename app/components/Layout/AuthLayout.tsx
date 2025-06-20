@@ -167,9 +167,9 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
       ),
     },
     {
-      path: "/users",
-      label: "User Management",
-      mobileLabel: "Users",
+      path: "/admin/all-patients",
+      label: "All patients",
+      mobileLabel: "Patients",
       allowedUserTypes: ["admin"],
       icon: (
         <svg
@@ -220,7 +220,10 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setIsDropdownOpen(false);
       }
     };

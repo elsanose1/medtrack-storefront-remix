@@ -287,9 +287,23 @@ export default function AdminDashboard({ userInfo }: AdminDashboardProps) {
 
       {/* Admins Table */}
       <div className="bg-white rounded-lg shadow-md p-6">
-        <h2 className="text-xl font-semibold text-gray-800 mb-4">
-          All Admins (Top 3)
-        </h2>
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-semibold text-gray-800">
+            All Admins (Top 3)
+          </h2>
+          <div className="flex gap-2">
+            <Link
+              to="/admin/all-admins"
+              className="text-indigo-600 hover:text-indigo-800 text-sm font-medium px-4 py-2 border border-indigo-600 rounded-md transition-colors">
+              View All
+            </Link>
+            <Link
+              to="/admin/create-admin"
+              className="text-indigo-600 hover:text-indigo-800 text-sm font-medium px-4 py-2 border border-indigo-600 rounded-md transition-colors">
+              Create Admin
+            </Link>
+          </div>
+        </div>
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
@@ -426,7 +440,9 @@ export default function AdminDashboard({ userInfo }: AdminDashboardProps) {
               </svg>
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-800">New User Registration</p>
+              <p className="text-sm font-medium text-gray-800">
+                New User Registration
+              </p>
               <p className="text-xs text-gray-500 mt-1">
                 <span className="font-medium">12 new users</span> registered
                 today
@@ -452,7 +468,9 @@ export default function AdminDashboard({ userInfo }: AdminDashboardProps) {
               </svg>
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-800">System Update Complete</p>
+              <p className="text-sm font-medium text-gray-800">
+                System Update Complete
+              </p>
               <p className="text-xs text-gray-500 mt-1">
                 Database migration completed successfully
               </p>
@@ -477,7 +495,9 @@ export default function AdminDashboard({ userInfo }: AdminDashboardProps) {
               </svg>
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-800image.png">Alert: High System Load</p>
+              <p className="text-sm font-medium text-gray-800image.png">
+                Alert: High System Load
+              </p>
               <p className="text-xs text-gray-500 mt-1">
                 Backend server utilization at 82%
               </p>
