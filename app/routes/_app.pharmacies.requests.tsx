@@ -10,6 +10,7 @@ interface ApprovedDrugRequest {
   price: number;
   status: "preparing" | "out_for_delivery" | "delivered" | "canceled";
   createdAt: string;
+  patientName?: string;
 }
 
 export default function PharmacyDrugRequestsPage() {
@@ -83,6 +84,8 @@ export default function PharmacyDrugRequestsPage() {
     setActionId(null);
   };
 
+  console.log(requests);
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
@@ -137,7 +140,7 @@ export default function PharmacyDrugRequestsPage() {
                       {req.drugID}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-gray-800">
-                      {req.patientID}
+                      {req.patientName || req.patientID}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-gray-800">
                       {req.note || "-"}
