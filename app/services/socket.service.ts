@@ -238,6 +238,88 @@ const removeErrorListener = () => {
   socket.off("reminder_error");
 };
 
+// --- POPUP NOTIFICATION EVENTS ---
+
+// Patient emits: request pharmacist attention
+const emitPatientPopupRequest = (payload: {
+  userId: string;
+  drugId: string;
+  note: string;
+}) => {
+  const currentSocket = socket || initializeSocket();
+  if (!currentSocket) return false;
+  currentSocket.emit("patient_popup_request", payload);
+  return true;
+};
+
+// Patient emits: cancel request
+const emitPatientPopupCancel = () => {
+  const currentSocket = socket || initializeSocket();
+  if (!currentSocket) return false;
+  currentSocket.emit("patient_popup_cancel");
+  return true;
+};
+
+// Pharmacist emits: respond to popup
+const emitPharmacistPopupResponse = (payload: {
+  patientId: string;
+  response: string;
+}) => {
+  const currentSocket = socket || initializeSocket();
+  if (!currentSocket) return false;
+  currentSocket.emit("pharmacist_popup_response", payload);
+  return true;
+};
+
+// Pharmacist listens: show popup
+const setupShowPopupListener = (
+  callback: (data: {
+    patientId: string;
+    userName: string;
+    userPhone: string;
+    drugId: string;
+    drugName: string;
+    note: string;
+  }) => void
+) => {
+  const currentSocket = socket || initializeSocket();
+  if (!currentSocket) return false;
+  currentSocket.on("show_popup", callback);
+  return true;
+};
+const removeShowPopupListener = () => {
+  if (!socket) return;
+  socket.off("show_popup");
+};
+
+// Pharmacist listens: close popup
+const setupClosePopupListener = (
+  callback: (data: { patientId: string }) => void
+) => {
+  const currentSocket = socket || initializeSocket();
+  if (!currentSocket) return false;
+  currentSocket.on("close_popup", callback);
+  return true;
+};
+const removeClosePopupListener = () => {
+  if (!socket) return;
+  socket.off("close_popup");
+};
+
+// Patient listens: popup response
+const setupPopupResponseListener = (
+  callback: (data: { response: string }) => void
+) => {
+  const currentSocket = socket || initializeSocket();
+  if (!currentSocket) return false;
+  currentSocket.on("popup_response", callback);
+  return true;
+};
+const removePopupResponseListener = () => {
+  if (!socket) return;
+  socket.off("popup_response");
+};
+
 export const socketService = {
   initializeSocket,
   disconnectSocket,
@@ -255,4 +337,13 @@ export const socketService = {
   setupErrorListener,
   removeErrorListener,
   getSocket: () => socket,
+  emitPatientPopupRequest,
+  emitPatientPopupCancel,
+  emitPharmacistPopupResponse,
+  setupShowPopupListener,
+  removeShowPopupListener,
+  setupClosePopupListener,
+  removeClosePopupListener,
+  setupPopupResponseListener,
+  removePopupResponseListener,
 };

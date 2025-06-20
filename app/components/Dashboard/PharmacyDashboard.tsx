@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "@remix-run/react";
+import { socketService } from "~/services/socket.service";
 
 interface UserInfo {
   id: string;
@@ -31,6 +32,16 @@ export default function PharmacyDashboard({
   const [pendingRefills, setPendingRefills] = useState<number>(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
+  // --- POPUP NOTIFICATION STATE ---
+  const [popupOpen, setPopupOpen] = useState(false);
+  const [popupPatientId, setPopupPatientId] = useState<string | null>(null);
+  const [popupUserName, setPopupUserName] = useState<string>("");
+  const [popupUserPhone, setPopupUserPhone] = useState<string>("");
+  const [popupDrugId, setPopupDrugId] = useState<string>("");
+  const [popupDrugName, setPopupDrugName] = useState<string>("");
+  const [popupNote, setPopupNote] = useState<string>("");
+  const [responseMessage, setResponseMessage] = useState<string>("");
+  const [responding, setResponding] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -85,6 +96,65 @@ export default function PharmacyDashboard({
     fetchData();
   }, []);
 
+  // Listen for show_popup and close_popup events
+  useEffect(() => {
+    const handleShowPopup = (data: {
+      patientId: string;
+      userName: string;
+      userPhone: string;
+      drugId: string;
+      drugName: string;
+      note: string;
+    }) => {
+      setPopupPatientId(data.patientId);
+      setPopupUserName(data.userName);
+      setPopupUserPhone(data.userPhone);
+      setPopupDrugId(data.drugId);
+      setPopupDrugName(data.drugName);
+      setPopupNote(data.note);
+      setPopupOpen(true);
+      setResponseMessage("");
+    };
+    const handleClosePopup = (data: { patientId: string }) => {
+      if (popupPatientId === data.patientId) {
+        setPopupOpen(false);
+        setPopupPatientId(null);
+        setPopupUserName("");
+        setPopupUserPhone("");
+        setPopupDrugId("");
+        setPopupDrugName("");
+        setPopupNote("");
+        setResponseMessage("");
+      }
+    };
+    socketService.setupShowPopupListener(handleShowPopup);
+    socketService.setupClosePopupListener(handleClosePopup);
+    return () => {
+      socketService.removeShowPopupListener();
+      socketService.removeClosePopupListener();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [popupPatientId]);
+
+  // Respond to patient
+  const handleRespond = () => {
+    if (!popupPatientId || !responseMessage.trim()) return;
+    setResponding(true);
+    socketService.emitPharmacistPopupResponse({
+      patientId: popupPatientId,
+      response: responseMessage,
+    });
+    setResponding(false);
+    setPopupOpen(false);
+    setPopupPatientId(null);
+    setPopupUserName("");
+    setPopupUserPhone("");
+    setPopupDrugId("");
+    setPopupDrugName("");
+    setPopupNote("");
+    setResponseMessage("");
+  };
+
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -98,13 +168,99 @@ export default function PharmacyDashboard({
 
   return (
     <div className="space-y-6">
+      {/* Popup Modal for Pharmacist */}
+      {popupOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+          <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md relative">
+            <button
+              className="absolute top-2 right-2 text-gray-400 hover:text-gray-600"
+              onClick={() => setPopupOpen(false)}
+              aria-label="Close">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-6 w-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+            <h2 className="text-lg font-semibold text-indigo-800 mb-2 flex items-center">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5 mr-2"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M13 16h-1v-4h-1m1-4h.01M12 20a8 8 0 100-16 8 8 0 000 16z"
+                />
+              </svg>
+              Patient Request
+            </h2>
+            <div className="mb-4">
+              <div className="font-medium text-gray-700 mb-1">
+                Patient Name:
+              </div>
+              <div className="bg-gray-100 rounded p-2 text-gray-900 mb-2">
+                {popupUserName}
+              </div>
+              <div className="font-medium text-gray-700 mb-1">
+                Patient Phone:
+              </div>
+              <div className="bg-gray-100 rounded p-2 text-gray-900 mb-2">
+                {popupUserPhone}
+              </div>
+              <div className="font-medium text-gray-700 mb-1">Medication:</div>
+              <div className="bg-gray-100 rounded p-2 text-gray-900 mb-2">
+                {popupDrugName}
+              </div>
+              <div className="font-medium text-gray-700 mb-1">Note:</div>
+              <div className="bg-gray-100 rounded p-2 text-gray-900">
+                {popupNote}
+              </div>
+            </div>
+            <div className="mb-4">
+              <label
+                htmlFor="pharmacist-response"
+                className="block text-sm font-medium text-gray-700 mb-1">
+                Respond to Patient:
+              </label>
+              <input
+                id="pharmacist-response"
+                type="text"
+                className="border border-indigo-300 rounded px-3 py-2 text-sm w-full"
+                placeholder="Enter your response"
+                value={responseMessage}
+                onChange={(e) => setResponseMessage(e.target.value)}
+                disabled={responding}
+              />
+            </div>
+            <button
+              onClick={handleRespond}
+              className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 text-sm w-full"
+              disabled={responding || !responseMessage.trim()}>
+              {responding ? "Sending..." : "Send Response"}
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Welcome Section */}
       <div className="bg-white rounded-lg shadow-md p-6">
         <h1 className="text-2xl font-bold text-gray-800">
           Welcome back, {userInfo?.firstName || "Pharmacy"}!
         </h1>
         <p className="text-gray-600 mt-2">
-          Here's an overview of your pharmacy operations and patient
+          Here&apos;s an overview of your pharmacy operations and patient
           information.
         </p>
       </div>

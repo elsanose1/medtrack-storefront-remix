@@ -27,6 +27,10 @@ export default function PatientDashboard({ userInfo }: PatientDashboardProps) {
   >([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
+  const [popupRequested, setPopupRequested] = useState(false);
+  const [popupMessage, setPopupMessage] = useState("");
+  const [popupResponse, setPopupResponse] = useState<string | null>(null);
+  const [popupLoading, setPopupLoading] = useState(false);
 
   // Fetch user medications and reminders
   useEffect(() => {
@@ -81,6 +85,19 @@ export default function PatientDashboard({ userInfo }: PatientDashboardProps) {
     };
   }, []);
 
+  // Listen for pharmacist popup response
+  useEffect(() => {
+    const handlePopupResponse = (data: { response: string }) => {
+      setPopupResponse(data.response);
+      setPopupRequested(false);
+      setPopupLoading(false);
+    };
+    socketService.setupPopupResponseListener(handlePopupResponse);
+    return () => {
+      socketService.removePopupResponseListener();
+    };
+  }, []);
+
   // Handle reminder response
   const handleReminderResponse = (
     medicationId: string,
@@ -98,6 +115,23 @@ export default function PatientDashboard({ userInfo }: PatientDashboardProps) {
           )
       )
     );
+  };
+
+  // Request pharmacist attention
+  const handleRequestPopup = () => {
+    if (!popupMessage.trim()) return;
+    setPopupLoading(true);
+    socketService.emitPatientPopupRequest({ message: popupMessage });
+    setPopupRequested(true);
+    setPopupResponse(null);
+  };
+
+  // Cancel request
+  const handleCancelPopup = () => {
+    socketService.emitPatientPopupCancel();
+    setPopupRequested(false);
+    setPopupLoading(false);
+    setPopupResponse(null);
   };
 
   if (isLoading) {
@@ -121,6 +155,60 @@ export default function PatientDashboard({ userInfo }: PatientDashboardProps) {
         <p className="text-gray-600 mt-2">
           Here&apos;s a summary of your medications and upcoming reminders.
         </p>
+      </div>
+
+      {/* Patient-to-Pharmacist Popup Notification UI */}
+      <div className="bg-blue-50 border border-blue-200 rounded-lg shadow-md p-6 mb-4">
+        <h2 className="text-lg font-semibold text-blue-800 mb-2 flex items-center">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-5 w-5 mr-2"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor">
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M13 16h-1v-4h-1m1-4h.01M12 20a8 8 0 100-16 8 8 0 000 16z"
+            />
+          </svg>
+          Request Pharmacist Attention
+        </h2>
+        {popupResponse ? (
+          <div className="bg-green-100 text-green-800 rounded p-3 mb-2">
+            Pharmacist Response: {popupResponse}
+          </div>
+        ) : popupRequested ? (
+          <div className="flex flex-col md:flex-row md:items-center gap-2">
+            <span className="text-blue-700">
+              Request sent. Waiting for pharmacist...
+            </span>
+            <button
+              onClick={handleCancelPopup}
+              className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 text-sm"
+              disabled={popupLoading}>
+              Cancel Request
+            </button>
+          </div>
+        ) : (
+          <div className="flex flex-col md:flex-row md:items-center gap-2">
+            <input
+              type="text"
+              className="border border-blue-300 rounded px-3 py-2 text-sm flex-1"
+              placeholder="Enter your message for the pharmacist"
+              value={popupMessage}
+              onChange={(e) => setPopupMessage(e.target.value)}
+              disabled={popupLoading}
+            />
+            <button
+              onClick={handleRequestPopup}
+              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm"
+              disabled={popupLoading || !popupMessage.trim()}>
+              {popupLoading ? "Requesting..." : "Request Attention"}
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Active Reminders */}

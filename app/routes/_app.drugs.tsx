@@ -1,6 +1,8 @@
 import { useState, useRef } from "react";
 import { Link, useLocation } from "@remix-run/react";
 import { drugService, Drug } from "~/services/drug.service";
+import { socketService } from "~/services/socket.service";
+import { authService } from "~/services/auth.service";
 import type { MetaFunction } from "@remix-run/node";
 
 export const meta: MetaFunction = () => {
@@ -30,6 +32,12 @@ export default function DrugsPage() {
   const [isDrugDetailsLoading, setIsDrugDetailsLoading] = useState(false);
   const location = useLocation();
   const detailsRef = useRef<HTMLDivElement>(null);
+  // --- POPUP STATE FOR PHARMACIST REQUEST ---
+  const [popupOpen, setPopupOpen] = useState(false);
+  const [popupNote, setPopupNote] = useState("");
+  const [popupLoading, setPopupLoading] = useState(false);
+  const [popupSent, setPopupSent] = useState(false);
+  const [popupError, setPopupError] = useState("");
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) return;
@@ -66,7 +74,10 @@ export default function DrugsPage() {
     if (drug) {
       setSelectedDrug(drug);
       setTimeout(() => {
-        detailsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+        detailsRef.current?.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
       }, 100);
     } else {
       fetchDrugDetails(drugId);
@@ -84,7 +95,10 @@ export default function DrugsPage() {
       if (response && response.success && response.data) {
         setSelectedDrug(response.data);
         setTimeout(() => {
-          detailsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+          detailsRef.current?.scrollIntoView({
+            behavior: "smooth",
+            block: "start",
+          });
         }, 100);
       } else {
         setError(response?.message || "Failed to fetch drug details");
@@ -95,6 +109,39 @@ export default function DrugsPage() {
     } finally {
       setIsDrugDetailsLoading(false);
     }
+  };
+
+  const handleOpenPopup = () => {
+    setPopupOpen(true);
+    setPopupNote("");
+    setPopupSent(false);
+    setPopupError("");
+  };
+  const handleClosePopup = () => {
+    setPopupOpen(false);
+    setPopupNote("");
+    setPopupSent(false);
+    setPopupError("");
+  };
+  const handleSendPopupRequest = () => {
+    if (!selectedDrug || !popupNote.trim()) {
+      setPopupError("Please enter a note for the pharmacist.");
+      return;
+    }
+    const user = authService.getUserInfo();
+    if (!user) {
+      setPopupError("You must be logged in to request pharmacist attention.");
+      return;
+    }
+    setPopupLoading(true);
+    setPopupError("");
+    socketService.emitPatientPopupRequest({
+      userId: user._id,
+      drugId: selectedDrug.id,
+      note: popupNote,
+    });
+    setPopupSent(true);
+    setPopupLoading(false);
   };
 
   return (
@@ -193,8 +240,8 @@ export default function DrugsPage() {
         )}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-             {/* Drug Details */}
-             <div className="lg:col-span-2" ref={detailsRef}>
+          {/* Drug Details */}
+          <div className="lg:col-span-2" ref={detailsRef}>
             <h2 className="text-lg font-medium text-gray-900 mb-3">
               Medication Details
             </h2>
@@ -291,6 +338,89 @@ export default function DrugsPage() {
                       )}
                   </div>
                 </div>
+
+                {/* Request Pharmacist Attention Button */}
+                <div className="mt-4 mb-4">
+                  <button
+                    className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm"
+                    onClick={handleOpenPopup}>
+                    Request Pharmacist Attention
+                  </button>
+                </div>
+                {/* Popup Modal */}
+                {popupOpen && (
+                  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+                    <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md relative">
+                      <button
+                        className="absolute top-2 right-2 text-gray-400 hover:text-gray-600"
+                        onClick={handleClosePopup}
+                        aria-label="Close">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-6 w-6"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor">
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M6 18L18 6M6 6l12 12"
+                          />
+                        </svg>
+                      </button>
+                      <h2 className="text-lg font-semibold text-blue-800 mb-2 flex items-center">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-5 w-5 mr-2"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor">
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M13 16h-1v-4h-1m1-4h.01M12 20a8 8 0 100-16 8 8 0 000 16z"
+                          />
+                        </svg>
+                        Request Pharmacist Attention
+                      </h2>
+                      {popupSent ? (
+                        <div className="bg-green-100 text-green-800 rounded p-3 mb-2">
+                          Request sent! A pharmacist will be notified.
+                        </div>
+                      ) : (
+                        <>
+                          <label
+                            htmlFor="popup-note"
+                            className="block text-sm font-medium text-gray-700 mb-1">
+                            Note for Pharmacist:
+                          </label>
+                          <textarea
+                            id="popup-note"
+                            className="border border-blue-300 rounded px-3 py-2 text-sm w-full mb-2"
+                            placeholder="Enter your note or question"
+                            value={popupNote}
+                            onChange={(e) => setPopupNote(e.target.value)}
+                            disabled={popupLoading}
+                            rows={3}
+                          />
+                          {popupError && (
+                            <div className="text-red-600 text-sm mb-2">
+                              {popupError}
+                            </div>
+                          )}
+                          <button
+                            onClick={handleSendPopupRequest}
+                            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm w-full"
+                            disabled={popupLoading || !popupNote.trim()}>
+                            {popupLoading ? "Sending..." : "Send Request"}
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                )}
 
                 <div className="mt-8">
                   <Link
@@ -412,8 +542,6 @@ export default function DrugsPage() {
               </div>
             )}
           </div>
-
-       
         </div>
       </div>
 
