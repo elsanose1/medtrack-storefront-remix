@@ -32,7 +32,11 @@ export default function PharmacyDrugRequestsPage() {
       }
       const res = await drugService.getPharmacyApprovedDrugRequests(user._id);
       if (res.success) {
-        setRequests(res.data);
+        const sortedData = res.data.sort(
+          (a: ApprovedDrugRequest, b: ApprovedDrugRequest) =>
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+        setRequests(sortedData);
       } else {
         setError(res.message || "Failed to fetch requests");
       }
