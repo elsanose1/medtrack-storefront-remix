@@ -388,7 +388,7 @@ export default function RemindersPage() {
                 </p>
                 <div className="mt-6">
                   <Link
-                    to="/medications/add"
+                    to="/drugs"
                     className="inline-flex items-center px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-md hover:bg-indigo-700">
                     Add Medication
                   </Link>

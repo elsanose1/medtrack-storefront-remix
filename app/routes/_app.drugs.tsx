@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Link, useLocation } from "@remix-run/react";
 import { drugService, Drug } from "~/services/drug.service";
 import type { MetaFunction } from "@remix-run/node";
@@ -29,6 +29,7 @@ export default function DrugsPage() {
   const [selectedDrug, setSelectedDrug] = useState<Drug | null>(null);
   const [isDrugDetailsLoading, setIsDrugDetailsLoading] = useState(false);
   const location = useLocation();
+  const detailsRef = useRef<HTMLDivElement>(null);
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) return;
@@ -64,6 +65,9 @@ export default function DrugsPage() {
 
     if (drug) {
       setSelectedDrug(drug);
+      setTimeout(() => {
+        detailsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 100);
     } else {
       fetchDrugDetails(drugId);
     }
@@ -79,6 +83,9 @@ export default function DrugsPage() {
       )) as DrugDetailsResponse;
       if (response && response.success && response.data) {
         setSelectedDrug(response.data);
+        setTimeout(() => {
+          detailsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+        }, 100);
       } else {
         setError(response?.message || "Failed to fetch drug details");
       }
@@ -137,7 +144,7 @@ export default function DrugsPage() {
               <input
                 type="text"
                 id="search"
-                className="block w-full rounded-md border text-gray-900 border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 bg-white placeholder:text-black"
+                className="block w-full rounded-md border text-gray-900 border-gray-500 shadow-sm h-full focus:border-indigo-500 focus:ring-indigo-500 bg-white placeholder:text-gray-500"
                 placeholder="Search by medication name..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -262,7 +269,7 @@ export default function DrugsPage() {
           </div>
 
           {/* Drug Details */}
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-2" ref={detailsRef}>
             <h2 className="text-lg font-medium text-gray-900 mb-3">
               Medication Details
             </h2>

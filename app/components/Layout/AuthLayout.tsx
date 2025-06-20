@@ -321,22 +321,22 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
       </header>
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-6">
+      <main className="container mx-auto px-4 py-6 ">
         {children || <Outlet />}
       </main>
 
       {/* Mobile Bottom Navigation Bar - limit to 5 items */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white shadow-lg border-t border-gray-200 z-50">
         <div className="flex justify-center items-center px-2">
-          <div className="grid grid-cols-5 gap-1 w-full max-w-md">
-            {filteredNavLinks.slice(0, 5).map((link) => (
+          <div className="flex w-full max-w-md">
+            {filteredNavLinks.map((link) => (
               <Link
                 key={link.path}
                 to={link.path}
-                className={`flex flex-col items-center justify-center py-2 px-1 ${
+                className={`flex-1 flex flex-col items-center justify-center py-2 px-1 ${
                   isActive(link.path)
                     ? "text-indigo-600"
-                    : "text-gray-500 hover:text-indigo-500"
+                    : "text-gray-500 hove r:text-indigo-500"
                 }`}>
                 {link.icon}
                 <span className="text-xs">

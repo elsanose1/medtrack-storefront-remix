@@ -55,17 +55,11 @@ export default function Profile() {
         <div className="bg-white shadow px-4 py-5 sm:rounded-lg sm:p-6 mb-6">
           <div className="md:flex md:items-center md:justify-between">
             <div className="flex-1 min-w-0">
-              <h2 className="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate">
+              <h2 className="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate hover:scale-105 transition-transform duration-300 text-center">
                 Profile
               </h2>
             </div>
-            <div className="mt-4 flex md:mt-0 md:ml-4">
-              <Link
-                to="edit"
-                className="ml-3 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                Edit Profile
-              </Link>
-            </div>
+            
           </div>
         </div>
 
@@ -88,7 +82,7 @@ export default function Profile() {
         {/* Tabs */}
         <div className="bg-white shadow sm:rounded-lg mb-6">
           <div className="border-b border-gray-200">
-            <nav className="-mb-px flex space-x-8 px-6" aria-label="Tabs">
+            <nav className="-mb-px flex space-x-8 px-6 justify-center" aria-label="Tabs">
               <button
                 onClick={() => setActiveTab("profile")}
                 className={`${
@@ -107,17 +101,7 @@ export default function Profile() {
                 } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}>
                 Security
               </button>
-              {userProfile.userType === "patient" && (
-                <button
-                  onClick={() => setActiveTab("medical")}
-                  className={`${
-                    activeTab === "medical"
-                      ? "border-indigo-500 text-indigo-600"
-                      : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                  } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}>
-                  Medical Information
-                </button>
-              )}
+             
             </nav>
           </div>
         </div>
@@ -150,7 +134,7 @@ export default function Profile() {
                   </div>
                   <div>
                     <h3 className="text-sm font-medium text-gray-500">Date of Birth</h3>
-                    <p className="mt-1 text-sm text-gray-900">{userProfile.dateOfBirth || "Not provided"}</p>
+                    <p className="mt-1 text-sm text-gray-900">{userProfile.dateOfBirth ? userProfile.dateOfBirth.slice(0, 10) : "Not provided"}</p>
                   </div>
                   <div className="sm:col-span-2">
                     <h3 className="text-sm font-medium text-gray-500">Address</h3>
@@ -197,30 +181,6 @@ export default function Profile() {
               </div>
             )}
 
-            {activeTab === "medical" && userProfile.userType === "patient" && (
-              <div className="space-y-6">
-                <div>
-                  <h3 className="text-sm font-medium text-gray-500">Medical History</h3>
-                  <p className="mt-1 text-sm text-gray-900">{userProfile.medicalHistory || "Not provided"}</p>
-                </div>
-                <div>
-                  <h3 className="text-sm font-medium text-gray-500">Allergies</h3>
-                  <div className="mt-1">
-                    {userProfile.allergies && userProfile.allergies.length > 0 ? (
-                      <ul className="list-disc pl-5 space-y-1">
-                        {userProfile.allergies.map((allergy, index) => (
-                          <li key={index} className="text-sm text-gray-900">
-                            {allergy}
-                          </li>
-                        ))}
-                      </ul>
-                    ) : (
-                      <p className="text-sm text-gray-900">No allergies recorded</p>
-                    )}
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
         </div>
       </div>

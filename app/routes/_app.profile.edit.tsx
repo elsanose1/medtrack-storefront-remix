@@ -25,8 +25,6 @@ export default function EditProfile() {
     dateOfBirth: "",
     phoneNumber: "",
     address: "",
-    medicalHistory: "",
-    allergies: [],
     userType: "",
   });
   const [error, setError] = useState<string>("");
@@ -111,7 +109,7 @@ export default function EditProfile() {
                 onChange={(e) =>
                   setFormData({ ...formData, firstName: e.target.value })
                 }
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                className="mt-1 block w-full rounded-md border-gray-300 bg-gray-50 text-gray-900 p-2 border shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                 required
               />
             </div>
@@ -129,7 +127,7 @@ export default function EditProfile() {
                 onChange={(e) =>
                   setFormData({ ...formData, lastName: e.target.value })
                 }
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                className="mt-1 block w-full rounded-md border-gray-300 bg-gray-50 text-gray-900 p-2 border shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                 required
               />
             </div>
@@ -147,7 +145,7 @@ export default function EditProfile() {
                 onChange={(e) =>
                   setFormData({ ...formData, phoneNumber: e.target.value })
                 }
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                className="mt-1 block w-full rounded-md border-gray-300 bg-gray-50 text-gray-900 p-2 border shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
               />
             </div>
 
@@ -164,7 +162,7 @@ export default function EditProfile() {
                 onChange={(e) =>
                   setFormData({ ...formData, dateOfBirth: e.target.value })
                 }
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                className="mt-1 block w-full rounded-md border-gray-300 bg-gray-50 text-gray-900 p-2 border shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
               />
             </div>
 
@@ -181,53 +179,11 @@ export default function EditProfile() {
                 onChange={(e) =>
                   setFormData({ ...formData, address: e.target.value })
                 }
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                className="mt-1 block w-full rounded-md border-gray-300 bg-gray-50 text-gray-900 p-2 border shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
               />
             </div>
 
-            {formData.userType === "patient" && (
-              <>
-                <div className="sm:col-span-2">
-                  <label
-                    htmlFor="medicalHistory"
-                    className="block text-sm font-medium text-gray-700">
-                    Medical History
-                  </label>
-                  <textarea
-                    id="medicalHistory"
-                    rows={4}
-                    value={formData.medicalHistory}
-                    onChange={(e) =>
-                      setFormData({ ...formData, medicalHistory: e.target.value })
-                    }
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                  />
-                </div>
-
-                <div className="sm:col-span-2">
-                  <label
-                    htmlFor="allergies"
-                    className="block text-sm font-medium text-gray-700">
-                    Allergies (comma-separated)
-                  </label>
-                  <input
-                    type="text"
-                    id="allergies"
-                    value={formData.allergies?.join(", ")}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        allergies: e.target.value
-                          .split(",")
-                          .map((item) => item.trim())
-                          .filter(Boolean),
-                      })
-                    }
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                  />
-                </div>
-              </>
-            )}
+           
           </div>
 
           {error && (

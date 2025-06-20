@@ -161,8 +161,8 @@ export default function MedicationsPage() {
             </div>
           </div>
         ) : (
-          <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
-            <table className="min-w-full divide-y divide-gray-300 ">
+          <div className="overflow-x-auto shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
+            <table className="min-w-full divide-y divide-gray-300 text-sm text-gray-500 font-medium table-auto">
               <thead className="bg-gray-50">
                 <tr>
                   <th
@@ -201,7 +201,7 @@ export default function MedicationsPage() {
                         {medication.genericName}
                       </div>
                     </td>
-                    <td className="whitespace-wrap px-3 py-4 text-sm  text-gray-500">
+                    <td className="px-3 py-4 text-sm text-gray-500 max-w-xs truncate" title={medication.dosage}>
                       {medication.dosage}
                     </td>
                     <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
