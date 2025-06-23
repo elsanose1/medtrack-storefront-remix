@@ -278,8 +278,8 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
   return (
     <div className="min-h-screen bg-gray-50 pb-16 md:pb-0">
       {/* Navigation Header */}
-      <header className="bg-blue-800 border-b border-gray-200 shadow-sm">
-        <div className="container mx-auto px-4">
+      <header className="bg-indigo-800 border-b border-gray-200 shadow-sm">
+        <div className="container mx-auto px-4 md:px-0">
           <div className="flex justify-between items-center h-16">
             {/* Logo and Brand */}
             <div className="flex items-center">
@@ -313,7 +313,7 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
             <div className="flex items-center relative" ref={dropdownRef}>
               <button
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                className="flex items-center justify-center w-10 h-10 rounded-full bg-indigo-600 text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                className="flex items-center justify-center w-10  h-10 rounded-full bg-indigo-700 text-white hover:bg-indigo-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 24 24"

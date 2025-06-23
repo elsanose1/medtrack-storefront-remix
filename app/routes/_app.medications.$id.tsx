@@ -152,11 +152,7 @@ export default function MedicationDetailPage() {
             {medication.brandName}
           </h1>
           <div className="flex space-x-2">
-            <Link
-              to={`/medications/${id}/edit`}
-              className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
-              Edit
-            </Link>
+        
             <button
               onClick={handleDeleteMedication}
               className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-red-600 hover:bg-red-700">
@@ -238,6 +234,7 @@ export default function MedicationDetailPage() {
                 key={reminder._id || index}
                 className="flex justify-between items-center border-b border-gray-100 pb-3">
                 <div>
+                  <h2>{medication.brandName}</h2>
                   <p className="text-sm text-gray-800">
                     {new Date(reminder.time).toLocaleTimeString([], {
                       hour: "2-digit",
@@ -251,13 +248,7 @@ export default function MedicationDetailPage() {
                     })}
                   </p>
                 </div>
-                <button
-                  onClick={() =>
-                    reminder._id && triggerTestReminder(reminder._id)
-                  }
-                  className="text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 px-2 py-1 rounded">
-                  Test
-                </button>
+                
               </div>
             ))}
           </div>
@@ -268,72 +259,7 @@ export default function MedicationDetailPage() {
         )}
       </div>
 
-      {/* Reminder History */}
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <h2 className="text-lg font-semibold text-gray-800 mb-4">
-          Reminder History
-        </h2>
-        {reminderHistory.length > 0 ? (
-          <div className="overflow-hidden ring-1 ring-black ring-opacity-5 md:rounded-lg">
-            <table className="min-w-full divide-y divide-gray-300">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th
-                    scope="col"
-                    className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900">
-                    Time
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
-                    Status
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
-                    Notes
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200 bg-white">
-                {reminderHistory.map((reminder, index) => (
-                  <tr key={reminder._id || index}>
-                    <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-900">
-                      {new Date(reminder.time).toLocaleString([], {
-                        dateStyle: "short",
-                        timeStyle: "short",
-                      })}
-                    </td>
-                    <td className="whitespace-nowrap px-3 py-4 text-sm">
-                      <span
-                        className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${
-                          reminder.status === "taken"
-                            ? "bg-green-100 text-green-800"
-                            : reminder.status === "missed"
-                            ? "bg-red-100 text-red-800"
-                            : "bg-yellow-100 text-yellow-800"
-                        }`}>
-                        {reminder.status === "taken"
-                          ? "Taken"
-                          : reminder.status === "missed"
-                          ? "Missed"
-                          : "Snoozed"}
-                      </span>
-                    </td>
-                    <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                      {reminder.notes || "-"}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <div className="text-center py-6 bg-gray-50 rounded-lg">
-            <p className="text-gray-500">No reminder history</p>
-          </div>
-        )}
-      </div>
+   
     </div>
   );
 }

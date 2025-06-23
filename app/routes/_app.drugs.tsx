@@ -380,7 +380,7 @@ export default function DrugsPage() {
                 {userInfo && userInfo.userType === "patient" && (
                   <div className="mt-4 mb-4">
                     <button
-                      className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm"
+                      className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                       onClick={handleOpenPopup}>
                       Request Drug
                     </button>

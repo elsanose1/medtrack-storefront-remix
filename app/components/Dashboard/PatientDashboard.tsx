@@ -234,7 +234,7 @@ export default function PatientDashboard({ userInfo }: PatientDashboardProps) {
           {medications.slice(0, 3).map((medication) => (
             <div
               key={medication._id}
-              className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition">
+              className="border border-gray-200 rounded-lg p-4 hover:shadow-2xl transition">
               <h3 className="font-semibold text-gray-800">
                 {medication.brandName}
               </h3>
@@ -310,11 +310,10 @@ export default function PatientDashboard({ userInfo }: PatientDashboardProps) {
                 <div className="flex justify-between items-start">
                   <div>
                     <h3 className="font-semibold text-gray-800">
-                      {medication.brandName} {medication.dosage}
+                      {medication.brandName} 
                     </h3>
                     <p className="text-sm text-gray-500">
-                      {medication.frequency}
-                    </p>
+                    {medication.dosage}                    </p>
                   </div>
                   {medication.nextReminder && (
                     <div className="text-sm text-gray-500">
@@ -345,7 +344,7 @@ export default function PatientDashboard({ userInfo }: PatientDashboardProps) {
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Link
-            to="/medications/add"
+            to="/drugs"
             className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
             <div className="flex-shrink-0 bg-indigo-100 p-2 rounded-md">
               <svg
