@@ -75,7 +75,7 @@ export default function PatientPharmacistAttentionPopup() {
     <>
       {/* Floating Button */}
       <button
-        className="fixed bottom-6 right-6 z-50 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg p-4 flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-blue-400"
+        className="fixed bottom-16 md:bottom-6 lg:bottom-6 right-6 z-50 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg p-4 flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-blue-400"
         onClick={() => setOpen(true)}
         aria-label="Request Drug"
         style={{ boxShadow: "0 4px 16px rgba(0,0,0,0.15)" }}>
